@@ -485,19 +485,7 @@
     Velocity.js
 ******************/
 
-;(function (factory) {
-    /* CommonJS module. */
-    if (typeof module === "object" && typeof module.exports === "object") {
-        module.exports = factory();
-    /* AMD module. */
-    } else if (typeof define === "function" && define.amd) {
-        define(factory);
-    /* Browser globals. */
-    } else {
-        factory();
-    }
-}(function() {
-return function (global, window, document, undefined) {
+;(function(window, document, undefined) {
 
     /***************
         Summary
@@ -625,15 +613,8 @@ return function (global, window, document, undefined) {
        Dependencies
     *****************/
 
-    var $,
-        isJQuery = false;
-
-    if (global.fn && global.fn.jquery) {
-        $ = global;
-        isJQuery = true;
-    } else {
-        $ = window['Velocity'].Utilities;
-    }
+    var $ = window['Velocity'].Utilities;
+    var isJQuery = false;
 
     if (IE <= 8 && !isJQuery) {
         throw new Error("Velocity: IE8 and below require jQuery to be loaded before Velocity.");
@@ -3854,19 +3835,7 @@ return function (global, window, document, undefined) {
         Frameworks
     ******************/
 
-    /* Both jQuery and Zepto allow their $.fn object to be extended to allow wrapped elements to be subjected to plugin calls.
-       If either framework is loaded, register a "velocity" extension pointing to Velocity's core animate() method.  Velocity
-       also registers itself onto a global container (window['jQuery'] || window['Zepto'] || window) so that certain features are
-       accessible beyond just a per-element scope. This master object contains an .animate() method, which is later assigned to $.fn
-       (if jQuery or Zepto are present). Accordingly, Velocity can both act on wrapped DOM elements and stand alone for targeting raw DOM elements. */
-    global.Velocity = Velocity;
-
-    if (global !== window) {
-        /* Assign the element function to Velocity's core animate() method. */
-        global.fn.velocity = animate;
-        /* Assign the object function's defaults to Velocity's global defaults object. */
-        global.fn.velocity.defaults = Velocity.defaults;
-    }
+    window.Velocity = Velocity;
 
     /***********************
        Packaged Redirects
@@ -3952,9 +3921,7 @@ return function (global, window, document, undefined) {
         };
     });
 
-    return Velocity;
-}((window['jQuery'] || window['Zepto'] || window), window, document);
-}));
+})(window, document);
 
 /******************
    Known Issues
