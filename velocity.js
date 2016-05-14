@@ -226,17 +226,19 @@
     }
   };
 
-    /* Custom */
-    $['removeData'] = function (node, keys) {
-        var id = node[$['expando']],
-            store = id && cache[id];
+  /* Custom */
+  
+  $['removeData'] = function (node, keys) {
 
-        if (store) {
-            $['each'](keys, function(_, key) {
-                delete store[key];
-            });
-        }
-    };
+    var id = node[$['expando']];
+    var store = id && cache[id];
+
+    if (store) {
+      $['each'](keys, function(_, key) {
+        delete store[key];
+      });
+    }
+  };
 
     /* jQuery */
     $['extend'] = function () {
@@ -886,11 +888,13 @@
     /* Given a tension, friction, and duration, a simulation at 60FPS will first run without a defined duration in order to calculate the full path. A second pass
        then adjusts the time delta -- using the relation between actual time and duration -- to calculate the path for the duration-constrained animation. */
     var generateSpringRK4 = (function () {
+
         function springAccelerationForState (state) {
             return (-state['tension'] * state['x']) - (state['friction'] * state['v']);
         }
 
         function springEvaluateStateWithDerivative (initialState, dt, derivative) {
+
             var state = {
                 'x': initialState['x'] + derivative['dx'] * dt,
                 'v': initialState['v'] + derivative['dv'] * dt,
@@ -898,19 +902,23 @@
                 'friction': initialState['friction']
             };
 
-            return { dx: state['v'], dv: springAccelerationForState(state) };
+            return {
+              'dx': state['v'],
+              'dv': springAccelerationForState(state)
+            };
         }
 
         function springIntegrateState (state, dt) {
+
             var a = {
-                    'dx': state['v'],
-                    'dv': springAccelerationForState(state)
-                },
-                b = springEvaluateStateWithDerivative(state, dt * 0.5, a),
-                c = springEvaluateStateWithDerivative(state, dt * 0.5, b),
-                d = springEvaluateStateWithDerivative(state, dt, c),
-                dxdt = 1.0 / 6.0 * (a['dx'] + 2.0 * (b['dx'] + c['dx']) + d['dx']),
-                dvdt = 1.0 / 6.0 * (a['dv'] + 2.0 * (b['dv'] + c['dv']) + d['dv']);
+              'dx': state['v'],
+              'dv': springAccelerationForState(state)
+            };
+            var b = springEvaluateStateWithDerivative(state, dt * 0.5, a);
+            var c = springEvaluateStateWithDerivative(state, dt * 0.5, b);
+            var d = springEvaluateStateWithDerivative(state, dt, c);
+            var dxdt = 1.0 / 6.0 * (a['dx'] + 2.0 * (b['dx'] + c['dx']) + d['dx']);
+            var dvdt = 1.0 / 6.0 * (a['dv'] + 2.0 * (b['dv'] + c['dv']) + d['dv']);
 
             state['x'] = state['x'] + dxdt * dt;
             state['v'] = state['v'] + dvdt * dt;
@@ -921,16 +929,16 @@
         return function springRK4Factory (tension, friction, duration) {
 
             var initState = {
-                    'x': -1,
-                    'v': 0,
-                    'tension': null,
-                    'friction': null
-                },
-                path = [0],
-                time_lapsed = 0,
-                tolerance = 1 / 10000,
-                DT = 16 / 1000,
-                have_duration, dt, last_state;
+              'x': -1,
+              'v': 0,
+              'tension': null,
+              'friction': null
+            };
+            var path = [0];
+            var time_lapsed = 0;
+            var tolerance = 1 / 10000;
+            var DT = 16 / 1000;
+            var have_duration, dt, last_state;
 
             tension = parseFloat(tension) || 500;
             friction = parseFloat(friction) || 20;
@@ -952,20 +960,24 @@
             }
 
             while (true) {
-                /* Next/step function .*/
-                last_state = springIntegrateState(last_state || initState, dt);
-                /* Store the position. */
-                path.push(1 + last_state['x']);
-                time_lapsed += 16;
-                /* If the change threshold is reached, break. */
-                if (!(Math.abs(last_state['x']) > tolerance && Math.abs(last_state['v']) > tolerance)) {
-                    break;
-                }
+              /* Next/step function .*/
+              last_state = springIntegrateState(last_state || initState, dt);
+              /* Store the position. */
+              path.push(1 + last_state['x']);
+              time_lapsed += 16;
+              /* If the change threshold is reached, break. */
+              if (!(Math.abs(last_state['x']) > tolerance && Math.abs(last_state['v']) > tolerance)) {
+                break;
+              }
             }
 
             /* If duration is not defined, return the actual time required for completing this animation. Otherwise, return a closure that holds the
                computed path and returns a snapshot of the position according to a given percentComplete. */
-            return !have_duration ? time_lapsed : function(percentComplete) { return path[ (percentComplete * (path.length - 1)) | 0 ]; };
+            return !have_duration
+              ? time_lapsed
+              : function(percentComplete) {
+                  return path[ (percentComplete * (path.length - 1)) | 0 ];
+                };
         };
     }());
 
@@ -2583,11 +2595,11 @@
                 /* Note: In order to be subjected to chaining and animation options, scroll's tweening is routed through Velocity as if it were a standard CSS property animation. */
                 if (action === "scroll") {
                     /* The scroll action uniquely takes an optional "offset" option -- specified in pixels -- that offsets the targeted scroll position. */
-                    var scrollDirection = (/^x$/i.test(opts['axis']) ? "Left" : "Top"),
-                        scrollOffset = parseFloat(opts['offset']) || 0,
-                        scrollPositionCurrent,
-                        scrollPositionCurrentAlternate,
-                        scrollPositionEnd;
+                    var scrollDirection = (/^x$/i.test(opts['axis']) ? "Left" : "Top");
+                    var scrollOffset = parseFloat(opts['offset']) || 0;
+                    var scrollPositionCurrent;
+                    var scrollPositionCurrentAlternate;
+                    var scrollPositionEnd;
 
                     /* Scroll also uniquely takes an optional "container" option, which indicates the parent element that should be scrolled --
                        as opposed to the browser window itself. This is useful for scrolling toward an element that's inside an overflowing parent element. */
@@ -2665,19 +2677,19 @@
 
                         /* If the element was hidden via the display option in the previous call,
                            revert display to "auto" prior to reversal so that the element is visible again. */
-                        if (Data(element).opts['display'] === "none") {
-                            Data(element).opts['display'] = "auto";
+                        if (Data(element)['opts']['display'] === "none") {
+                            Data(element)['opts']['display'] = "auto";
                         }
 
-                        if (Data(element).opts['visibility'] === "hidden") {
-                            Data(element).opts['visibility'] = "visible";
+                        if (Data(element)['opts']['visibility'] === "hidden") {
+                            Data(element)['opts']['visibility'] = "visible";
                         }
 
                         /* If the loop option was set in the previous call, disable it so that "reverse" calls aren't recursively generated.
                            Further, remove the previous call's callback options; typically, users do not want these to be refired. */
-                        Data(element).opts['loop'] = false;
-                        Data(element).opts['begin'] = null;
-                        Data(element).opts['complete'] = null;
+                        Data(element)['opts']['loop'] = false;
+                        Data(element)['opts']['begin'] = null;
+                        Data(element)['opts']['complete'] = null;
 
                         /* Since we're extending an opts object that has already been extended with the defaults options object,
                            we remove non-explicitly-defined properties that are auto-assigned values. */
@@ -2691,7 +2703,7 @@
 
                         /* The opts object used for reversal is an extension of the options object optionally passed into this
                            reverse call plus the options used in the previous Velocity call. */
-                        opts = $['extend']({}, Data(element).opts, opts);
+                        opts = $['extend']({}, Data(element)['opts'], opts);
 
                         /*************************************
                            Tweens Container Reconstruction
@@ -2759,9 +2771,10 @@
                        The optional third parameter is a forcefed startValue to be used instead of querying the DOM for
                        the element's current value. Read Velocity's docmentation to learn more about forcefeeding: VelocityJS.org/#forcefeeding */
                     function parsePropertyValue (valueData, skipResolvingEasing) {
-                        var endValue = undefined,
-                            easing = undefined,
-                            startValue = undefined;
+
+                        var endValue   = undefined;
+                        var easing     = undefined;
+                        var startValue = undefined;
 
                         /* Handle the array format, which can be structured as one of three potential overloads:
                            A) [ endValue, easing, startValue ], B) [ endValue, easing ], or C) [ endValue, startValue ] */
@@ -2776,7 +2789,9 @@
                                 startValue = valueData[1];
                             /* Two or three-item array: If the second item is a non-hex string or an array, treat it as an easing. */
                             } else if ((isString(valueData[1]) && !CSS['RegEx']['isHex'].test(valueData[1])) || isArray(valueData[1])) {
-                                easing = skipResolvingEasing ? valueData[1] : getEasing(valueData[1], opts['duration']);
+                                easing = skipResolvingEasing
+                                  ? valueData[1]
+                                  : getEasing(valueData[1], opts['duration']);
 
                                 /* Don't bother validating startValue's value now since the ensuing property cycling logic inherently does that. */
                                 if (valueData[2] !== undefined) {
@@ -2813,10 +2828,10 @@
                         /* Find shorthand color properties that have been passed a hex string. */
                         if (RegExp("^" + CSS['Lists']['colors'].join("$|^") + "$").test(property)) {
                             /* Parse the value data for each shorthand. */
-                            var valueData = parsePropertyValue(value, true),
-                                endValue = valueData[0],
-                                easing = valueData[1],
-                                startValue = valueData[2];
+                            var valueData  = parsePropertyValue(value, true);
+                            var endValue   = valueData[0];
+                            var easing     = valueData[1];
+                            var startValue = valueData[2];
 
                             if (CSS['RegEx']['isHex'].test(endValue)) {
                                 /* Convert the hex strings into their RGB component arrays. */
@@ -2828,12 +2843,10 @@
                                 for (var i = 0; i < colorComponents.length; i++) {
                                     var dataArray = [ endValueRGB[i] ];
 
-                                    if (easing) {
-                                        dataArray.push(easing);
-                                    }
+                                    if (easing) dataArray.push(easing);
 
                                     if (startValueRGB !== undefined) {
-                                        dataArray.push(startValueRGB[i]);
+                                      dataArray.push(startValueRGB[i]);
                                     }
 
                                     propertiesMap[property + colorComponents[i]] = dataArray;
@@ -3046,7 +3059,9 @@
                             var unitRatios = {};
 
                             if (!sameEmRatio || !samePercentRatio) {
-                                var dummy = Data(element)['isSVG'] ? document['createElementNS']("http://www.w3.org/2000/svg", "rect") : document['createElement']("div");
+                                var dummy = Data(element)['isSVG']
+                                  ? document['createElementNS']("http://www.w3.org/2000/svg", "rect")
+                                  : document['createElement']("div");
 
                                 Velocity['init'](dummy);
                                 sameRatioIndicators['myParent']['appendChild'](dummy);
@@ -3233,7 +3248,7 @@
                     /* Store the tweensContainer and options if we're working on the default effects queue, so that they can be used by the reverse command. */
                     if (opts['queue'] === "") {
                         Data(element)['tweensContainer'] = tweensContainer;
-                        Data(element).opts = opts;
+                        Data(element)['opts'] = opts;
                     }
 
                     /* Switch on the element's animating flag. */
@@ -3515,11 +3530,13 @@
                     for (var property in tweensContainer) {
                         /* Note: In addition to property tween data, tweensContainer contains a reference to its associated element. */
                         if (property !== "element") {
-                            var tween = tweensContainer[property],
-                                currentValue,
-                                /* Easing can either be a pre-genereated function or a string that references a pre-registered easing
-                                   on the Velocity['Easings'] object. In either case, return the appropriate easing *function*. */
-                                easing = isString(tween['easing']) ? Velocity['Easings'][tween['easing']] : tween['easing'];
+                            var tween = tweensContainer[property];
+                            var currentValue;
+                            /* Easing can either be a pre-genereated function or a string that references a pre-registered easing
+                               on the Velocity['Easings'] object. In either case, return the appropriate easing *function*. */
+                            var easing = isString(tween['easing'])
+                              ? Velocity['Easings'][tween['easing']]
+                              : tween['easing'];
 
                             /******************************
                                Current Value Calculation
@@ -3780,7 +3797,7 @@
                     }
                 });
 
-                Velocity(element, "reverse", { loop: true, delay: opts['delay'] });
+                Velocity(element, "reverse", { 'loop': true, 'delay': opts['delay'] });
             }
 
             /***************
