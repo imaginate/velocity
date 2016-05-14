@@ -508,40 +508,48 @@
 
     /* IE detection. Gist: https://gist.github.com/julianshapiro/9098609 */
     var IE = (function() {
-        if (document.documentMode) {
-            return document.documentMode;
-        } else {
-            for (var i = 7; i > 4; i--) {
-                var div = document.createElement("div");
 
-                div.innerHTML = "<!--[if IE " + i + "]><span></span><![endif]-->";
+      /** @type {?Element} */
+      var div;
 
-                if (div.getElementsByTagName("span").length) {
-                    div = null;
+      if ( document['documentMode'] ) return document['documentMode'];
 
-                    return i;
-                }
-            }
+      for (var i = 7; i > 4; i--) {
+        div = document['createElement']("div");
+        div['innerHTML'] = "<!--[if IE " + i + "]><span></span><![endif]-->";
+
+        if (div['getElementsByTagName']("span").length) {
+          div = null;
+          return i;
         }
+      }
 
-        return undefined;
+      return undefined;
     })();
 
     /* rAF shim. Gist: https://gist.github.com/julianshapiro/9497513 */
     var rAFShim = (function() {
-        var timeLast = 0;
 
-        return window['webkitRequestAnimationFrame'] || window['mozRequestAnimationFrame'] || function(callback) {
-            var timeCurrent = (new Date()).getTime(),
-                timeDelta;
+      /** @type {number} */
+      var timeLast;
 
-            /* Dynamically set delay on a per-tick basis to match 60fps. */
-            /* Technique by Erik Moller. MIT license: https://gist.github.com/paulirish/1579671 */
-            timeDelta = Math.max(0, 16 - (timeCurrent - timeLast));
-            timeLast = timeCurrent + timeDelta;
+      timeLast = 0;
+      return window['webkitRequestAnimationFrame'] || window['mozRequestAnimationFrame'] || function(callback) {
 
-            return setTimeout(function() { callback(timeCurrent + timeDelta); }, timeDelta);
-        };
+        /** @type {number} */
+        var timeCurrent;
+        /** @type {number} */
+        var timeDelta;
+
+        timeCurrent = (new Date()).getTime();
+
+        /* Dynamically set delay on a per-tick basis to match 60fps. */
+        /* Technique by Erik Moller. MIT license: https://gist.github.com/paulirish/1579671 */
+        timeDelta = Math.max(0, 16 - (timeCurrent - timeLast));
+        timeLast = timeCurrent + timeDelta;
+
+        return setTimeout(function() { callback(timeCurrent + timeDelta); }, timeDelta);
+      };
     })();
 
     /* Array compacting. Copyright Lo-Dash. MIT License: https://github.com/lodash/lodash/blob/master/LICENSE.txt */
@@ -3878,7 +3886,7 @@
             opts.complete = function() {
                 /* Reset element to its pre-slide inline values once its slide animation is complete. */
                 for (var property in inlineValues) {
-                    element.style[property] = inlineValues[property];
+                    element['style'][property] = inlineValues[property];
                 }
 
                 /* If the user passed in a complete callback, fire it now. */
