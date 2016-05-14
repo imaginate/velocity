@@ -16,13 +16,13 @@
     ***************/
 
     /* If jQuery is already loaded, there's no point in loading this shim. */
-    if (window.jQuery) {
+    if (window['jQuery']) {
         return;
     }
 
     /* jQuery base. */
     var $ = function (selector, context) {
-        return new $.fn.init(selector, context);
+        return new $['fn']['init'](selector, context);
     };
 
     /********************
@@ -30,13 +30,13 @@
     ********************/
 
     /* jQuery */
-    $.isWindow = function (obj) {
+    $['isWindow'] = function (obj) {
         /* jshint eqeqeq: false */
         return obj != null && obj == obj.window;
     };
 
     /* jQuery */
-    $.type = function (obj) {
+    $['type'] = function (obj) {
         if (obj == null) {
             return obj + "";
         }
@@ -47,16 +47,16 @@
     };
 
     /* jQuery */
-    $.isArray = Array.isArray || function (obj) {
-        return $.type(obj) === "array";
+    $['isArray'] = Array.isArray || function (obj) {
+        return $['type'](obj) === "array";
     };
 
     /* jQuery */
     function isArraylike (obj) {
         var length = obj.length,
-            type = $.type(obj);
+            type = $['type'](obj);
 
-        if (type === "function" || $.isWindow(obj)) {
+        if (type === "function" || $['isWindow'](obj)) {
             return false;
         }
 
@@ -72,10 +72,10 @@
     ***************/
 
     /* jQuery: Support removed for IE<9. */
-    $.isPlainObject = function (obj) {
+    $['isPlainObject'] = function (obj) {
         var key;
 
-        if (!obj || $.type(obj) !== "object" || obj.nodeType || $.isWindow(obj)) {
+        if (!obj || $['type'](obj) !== "object" || obj.nodeType || $['isWindow'](obj)) {
             return false;
         }
 
@@ -95,7 +95,7 @@
     };
 
     /* jQuery */
-    $.each = function(obj, callback, args) {
+    $['each'] = function(obj, callback, args) {
         var value,
             i = 0,
             length = obj.length,
@@ -144,10 +144,10 @@
     };
 
     /* Custom */
-    $.data = function (node, key, value) {
-        /* $.getData() */
+    $['data'] = function (node, key, value) {
+        /* $['getData']() */
         if (value === undefined) {
-            var id = node[$.expando],
+            var id = node[$['expando']],
                 store = id && cache[id];
 
             if (key === undefined) {
@@ -157,9 +157,9 @@
                     return store[key];
                 }
             }
-        /* $.setData() */
+        /* $['setData']() */
         } else if (key !== undefined) {
-            var id = node[$.expando] || (node[$.expando] = ++$.uuid);
+            var id = node[$['expando']] || (node[$['expando']] = ++$['uuid']);
 
             cache[id] = cache[id] || {};
             cache[id][key] = value;
@@ -169,19 +169,19 @@
     };
 
     /* Custom */
-    $.removeData = function (node, keys) {
-        var id = node[$.expando],
+    $['removeData'] = function (node, keys) {
+        var id = node[$['expando']],
             store = id && cache[id];
 
         if (store) {
-            $.each(keys, function(_, key) {
+            $['each'](keys, function(_, key) {
                 delete store[key];
             });
         }
     };
 
     /* jQuery */
-    $.extend = function () {
+    $['extend'] = function () {
         var src, copyIsArray, copy, name, options, clone,
             target = arguments[0] || {},
             i = 1,
@@ -195,7 +195,7 @@
             i++;
         }
 
-        if (typeof target !== "object" && $.type(target) !== "function") {
+        if (typeof target !== "object" && $['type'](target) !== "function") {
             target = {};
         }
 
@@ -214,16 +214,16 @@
                         continue;
                     }
 
-                    if (deep && copy && ($.isPlainObject(copy) || (copyIsArray = $.isArray(copy)))) {
+                    if (deep && copy && ($['isPlainObject'](copy) || (copyIsArray = $['isArray'](copy)))) {
                         if (copyIsArray) {
                             copyIsArray = false;
-                            clone = src && $.isArray(src) ? src : [];
+                            clone = src && $['isArray'](src) ? src : [];
 
                         } else {
-                            clone = src && $.isPlainObject(src) ? src : {};
+                            clone = src && $['isPlainObject'](src) ? src : {};
                         }
 
-                        target[name] = $.extend(deep, clone, copy);
+                        target[name] = $['extend'](deep, clone, copy);
 
                     } else if (copy !== undefined) {
                         target[name] = copy;
@@ -236,13 +236,13 @@
     };
 
     /* jQuery 1.4.3 */
-    $.queue = function (elem, type, data) {
+    $['queue'] = function (elem, type, data) {
         function $makeArray (arr, results) {
             var ret = results || [];
 
             if (arr != null) {
                 if (isArraylike(Object(arr))) {
-                    /* $.merge */
+                    /* $['merge'] */
                     (function(first, second) {
                         var len = +second.length,
                             j = 0,
@@ -276,14 +276,14 @@
 
         type = (type || "fx") + "queue";
 
-        var q = $.data(elem, type);
+        var q = $['data'](elem, type);
 
         if (!data) {
             return q || [];
         }
 
-        if (!q || $.isArray(data)) {
-            q = $.data(elem, type, $makeArray(data));
+        if (!q || $['isArray'](data)) {
+            q = $['data'](elem, type, $makeArray(data));
         } else {
             q.push(data);
         }
@@ -292,12 +292,12 @@
     };
 
     /* jQuery 1.4.3 */
-    $.dequeue = function (elems, type) {
+    $['dequeue'] = function (elems, type) {
         /* Custom: Embed element iteration. */
-        $.each(elems.nodeType ? [ elems ] : elems, function(i, elem) {
+        $['each'](elems.nodeType ? [ elems ] : elems, function(i, elem) {
             type = type || "fx";
 
-            var queue = $.queue(elem, type),
+            var queue = $['queue'](elem, type),
                 fn = queue.shift();
 
             if (fn === "inprogress") {
@@ -310,18 +310,18 @@
                 }
 
                 fn.call(elem, function() {
-                    $.dequeue(elem, type);
+                    $['dequeue'](elem, type);
                 });
             }
         });
     };
 
     /******************
-       $.fn Methods
+       $['fn'] Methods
     ******************/
 
     /* jQuery */
-    $.fn = $.prototype = {
+    $['fn'] = $['prototype'] = {
         init: function (selector) {
             /* Just return the element wrapped inside an array; don't proceed with the actual jQuery node wrapping process. */
             if (selector.nodeType) {
@@ -338,8 +338,8 @@
             var box = this[0].getBoundingClientRect ? this[0].getBoundingClientRect() : { top: 0, left: 0 };
 
             return {
-                top: box.top + (window.pageYOffset || document.scrollTop  || 0)  - (document.clientTop  || 0),
-                left: box.left + (window.pageXOffset || document.scrollLeft  || 0) - (document.clientLeft || 0)
+                top: box.top + (window['pageYOffset'] || document.scrollTop  || 0)  - (document.clientTop  || 0),
+                left: box.left + (window['pageXOffset'] || document.scrollLeft  || 0) - (document.clientLeft || 0)
             };
         },
 
@@ -380,12 +380,12 @@
        Private Variables
     **********************/
 
-    /* For $.data() */
+    /* For $['data']() */
     var cache = {};
-    $.expando = "velocity" + (new Date().getTime());
-    $.uuid = 0;
+    $['expando'] = "velocity" + (new Date().getTime());
+    $['uuid'] = 0;
 
-    /* For $.queue() */
+    /* For $['queue']() */
     var class2type = {},
         hasOwn = class2type.hasOwnProperty,
         toString = class2type.toString;
@@ -396,10 +396,10 @@
     }
 
     /* Makes $(node) possible, without having to call init. */
-    $.fn.init.prototype = $.fn;
+    $['fn']['init']['prototype'] = $['fn'];
 
     /* Globalize Velocity onto the window, and assign its Utilities property. */
-    window.Velocity = { Utilities: $ };
+    window['Velocity'] = { 'Utilities': $ };
 })(window);
 
 /******************
@@ -464,7 +464,7 @@ return function (global, window, document, undefined) {
     var rAFShim = (function() {
         var timeLast = 0;
 
-        return window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(callback) {
+        return window['webkitRequestAnimationFrame'] || window['mozRequestAnimationFrame'] || function(callback) {
             var timeCurrent = (new Date()).getTime(),
                 timeDelta;
 
@@ -528,10 +528,10 @@ return function (global, window, document, undefined) {
         },
         /* Determine if variable is a wrapped jQuery or Zepto element. */
         isWrapped: function (variable) {
-            return variable && (variable.jquery || (window.Zepto && window.Zepto.zepto.isZ(variable)));
+            return variable && (variable.jquery || (window['Zepto'] && window['Zepto'].zepto.isZ(variable)));
         },
         isSVG: function (variable) {
-            return window.SVGElement && (variable instanceof window.SVGElement);
+            return window['SVGElement'] && (variable instanceof window['SVGElement']);
         },
         isEmptyObject: function (variable) {
             for (var name in variable) {
@@ -553,7 +553,7 @@ return function (global, window, document, undefined) {
         $ = global;
         isJQuery = true;
     } else {
-        $ = window.Velocity.Utilities;
+        $ = window['Velocity'].Utilities;
     }
 
     if (IE <= 8 && !isJQuery) {
@@ -585,7 +585,7 @@ return function (global, window, document, undefined) {
             /* The mobileHA option's behavior changes on older Android devices (Gingerbread, versions 2.3.3-2.3.7). */
             isAndroid: /Android/i.test(navigator.userAgent),
             isGingerbread: /Android 2\.3\.[3-7]/i.test(navigator.userAgent),
-            isChrome: window.chrome,
+            isChrome: window['chrome'],
             isFirefox: /Firefox/i.test(navigator.userAgent),
             /* Create a cached element for re-use when checking for CSS property prefixes. */
             prefixElement: document.createElement("div"),
@@ -609,7 +609,7 @@ return function (global, window, document, undefined) {
         Redirects: { /* Manually registered by the user. */ },
         Easings: { /* Defined below. */ },
         /* Attempt to use ES6 Promises by default. Users can override this with a third-party promises library. */
-        Promise: window.Promise,
+        Promise: window['Promise'],
         /* Velocity option defaults, which can be overriden by the user. */
         defaults: {
             queue: "",
@@ -634,7 +634,7 @@ return function (global, window, document, undefined) {
                 /* Keep track of whether the element is currently being animated by Velocity.
                    This is used to ensure that property values are not transferred between non-consecutive (stale) calls. */
                 isAnimating: false,
-                /* A reference to the element's live computedStyle object. Learn more here: https://developer.mozilla.org/en/docs/Web/API/window.getComputedStyle */
+                /* A reference to the element's live computedStyle object. Learn more here: https://developer.mozilla.org/en/docs/Web/API/window['getComputedStyle'] */
                 computedStyle: null,
                 /* Tween data is cached for each animation on the element so that data can be passed across calls --
                    in particular, end values are used as subsequent start values in consecutive Velocity calls. */
@@ -657,7 +657,7 @@ return function (global, window, document, undefined) {
     };
 
     /* Retrieve the appropriate scroll anchor and property name for the browser: https://developer.mozilla.org/en-US/docs/Web/API/Window.scrollY */
-    if (window.pageYOffset !== undefined) {
+    if (window['pageYOffset'] !== undefined) {
         Velocity.State.scrollAnchor = window;
         Velocity.State.scrollPropertyLeft = "pageXOffset";
         Velocity.State.scrollPropertyTop = "pageYOffset";
@@ -1610,7 +1610,7 @@ return function (global, window, document, undefined) {
             /* Get an element's computed property value. */
             /* Note: Retrieving the value of a CSS property cannot simply be performed by checking an element's
                style attribute (which only reflects user-defined values). Instead, the browser must be queried for a property's
-               *computed* value. You can read more about getComputedStyle here: https://developer.mozilla.org/en/docs/Web/API/window.getComputedStyle */
+               *computed* value. You can read more about getComputedStyle here: https://developer.mozilla.org/en/docs/Web/API/window['getComputedStyle'] */
             function computePropertyValue (element, property) {
                 /* When box-sizing isn't set to border-box, height and width style values are incorrectly computed when an
                    element's scrollbars are visible (which expands the element's dimensions). Thus, we defer to the more accurate
@@ -1618,7 +1618,7 @@ return function (global, window, document, undefined) {
                    We subtract border and padding to get the sum of interior + scrollbar. */
                 var computedValue = 0;
 
-                /* IE<=8 doesn't support window.getComputedStyle, thus we defer to jQuery, which has an extensive array
+                /* IE<=8 doesn't support window['getComputedStyle'], thus we defer to jQuery, which has an extensive array
                    of hacks to accurately retrieve IE8 property values. Re-implementing that logic here is not worth bloating the
                    codebase for a dying browser. The performance repercussions of using jQuery here are minimal since
                    Velocity is optimized to rarely (and sometimes never) query the DOM. Further, the $.css() codepath isn't that slow. */
@@ -1661,10 +1661,10 @@ return function (global, window, document, undefined) {
                     /* For elements that Velocity hasn't been called on directly (e.g. when Velocity queries the DOM on behalf
                        of a parent of an element its animating), perform a direct getComputedStyle lookup since the object isn't cached. */
                     if (Data(element) === undefined) {
-                        computedStyle = window.getComputedStyle(element, null); /* GET */
+                        computedStyle = window['getComputedStyle'](element, null); /* GET */
                     /* If the computedStyle object has yet to be cached, do so now. */
                     } else if (!Data(element).computedStyle) {
-                        computedStyle = Data(element).computedStyle = window.getComputedStyle(element, null); /* GET */
+                        computedStyle = Data(element).computedStyle = window['getComputedStyle'](element, null); /* GET */
                     /* If computedStyle is cached, use it. */
                     } else {
                         computedStyle = Data(element).computedStyle;
@@ -1811,9 +1811,9 @@ return function (global, window, document, undefined) {
                 /* Otherwise, Velocity defaults to scrolling the browser window. */
                 } else {
                     if (scrollData.direction === "Left") {
-                        window.scrollTo(propertyValue, scrollData.alternateValue);
+                        window['scrollTo'](propertyValue, scrollData.alternateValue);
                     } else {
-                        window.scrollTo(scrollData.alternateValue, propertyValue);
+                        window['scrollTo'](scrollData.alternateValue, propertyValue);
                     }
                 }
             } else {
@@ -2560,7 +2560,7 @@ return function (global, window, document, undefined) {
                         /* If the window itself is being scrolled -- not a containing element -- perform a live scroll position lookup using
                            the appropriate cached property names (which differ based on browser type). */
                         scrollPositionCurrent = Velocity.State.scrollAnchor[Velocity.State["scrollProperty" + scrollDirection]]; /* GET */
-                        /* When scrolling the browser window, cache the alternate axis's current value since window.scrollTo() doesn't let us change only one value at a time. */
+                        /* When scrolling the browser window, cache the alternate axis's current value since window['scrollTo']() doesn't let us change only one value at a time. */
                         scrollPositionCurrentAlternate = Velocity.State.scrollAnchor[Velocity.State["scrollProperty" + (scrollDirection === "Left" ? "Top" : "Left")]]; /* GET */
 
                         /* Unlike $.position(), $.offset() values are relative to the browser window's true dimensions -- not merely its currently viewable area --
@@ -3043,8 +3043,8 @@ return function (global, window, document, undefined) {
 
                             /* Similarly, viewport units are %-relative to the window's inner dimensions. */
                             if (callUnitConversionData.vwToPx === null) {
-                                callUnitConversionData.vwToPx = parseFloat(window.innerWidth) / 100; /* GET */
-                                callUnitConversionData.vhToPx = parseFloat(window.innerHeight) / 100; /* GET */
+                                callUnitConversionData.vwToPx = parseFloat(window['innerWidth']) / 100; /* GET */
+                                callUnitConversionData.vhToPx = parseFloat(window['innerHeight']) / 100; /* GET */
                             }
 
                             unitRatios.remToPx = callUnitConversionData.remToPx;
@@ -3327,7 +3327,7 @@ return function (global, window, document, undefined) {
     **************/
 
     /* Ticker function. */
-    var ticker = window.requestAnimationFrame || rAFShim;
+    var ticker = window['requestAnimationFrame'] || rAFShim;
 
     /* Inactive browser tabs pause rAF, which results in all active animations immediately sprinting to their completion states when the tab refocuses.
        To get around this, we dynamically switch rAF to setTimeout (which the browser *doesn't* pause) when the tab loses focus. We skip this for mobile
@@ -3345,7 +3345,7 @@ return function (global, window, document, undefined) {
                 /* The rAF loop has been paused by the browser, so we manually restart the tick. */
                 tick();
             } else {
-                ticker = window.requestAnimationFrame || rAFShim;
+                ticker = window['requestAnimationFrame'] || rAFShim;
             }
         });
     }
@@ -3777,7 +3777,7 @@ return function (global, window, document, undefined) {
 
     /* Both jQuery and Zepto allow their $.fn object to be extended to allow wrapped elements to be subjected to plugin calls.
        If either framework is loaded, register a "velocity" extension pointing to Velocity's core animate() method.  Velocity
-       also registers itself onto a global container (window.jQuery || window.Zepto || window) so that certain features are
+       also registers itself onto a global container (window['jQuery'] || window['Zepto'] || window) so that certain features are
        accessible beyond just a per-element scope. This master object contains an .animate() method, which is later assigned to $.fn
        (if jQuery or Zepto are present). Accordingly, Velocity can both act on wrapped DOM elements and stand alone for targeting raw DOM elements. */
     global.Velocity = Velocity;
@@ -3874,7 +3874,7 @@ return function (global, window, document, undefined) {
     });
 
     return Velocity;
-}((window.jQuery || window.Zepto || window), window, document);
+}((window['jQuery'] || window['Zepto'] || window), window, document);
 }));
 
 /******************
