@@ -15,11 +15,6 @@
          Setup
     ***************/
 
-    /* If jQuery is already loaded, there's no point in loading this shim. */
-    if (window['jQuery']) {
-        return;
-    }
-
     /* jQuery base. */
     var $ = function (selector, context) {
         return new $['fn']['init'](selector, context);
