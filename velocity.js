@@ -72,7 +72,7 @@
   
   $['isWindow'] = function (obj) {
     /* jshint eqeqeq: false */
-    return obj != null && obj == obj.window;
+    return obj != null && obj == obj['window'];
   };
 
   /* jQuery */
@@ -128,7 +128,7 @@
     if ( obj['nodeType'] || $['isWindow'](obj)  ) return false;
 
     try {
-      if (obj.constructor &&
+      if (obj['constructor'] &&
           !hasOwn.call(obj, "constructor") &&
           !hasOwn.call(obj.constructor.prototype, "isPrototypeOf")) {
         return false;
@@ -651,25 +651,25 @@
         /* Container for page-wide Velocity state data. */
         'State': {
             /* Detect mobile devices to determine if mobileHA should be turned on. */
-            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator['userAgent']),
+            'isMobile': /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator['userAgent']),
             /* The mobileHA option's behavior changes on older Android devices (Gingerbread, versions 2.3.3-2.3.7). */
-            isAndroid: /Android/i.test(navigator['userAgent']),
-            isGingerbread: /Android 2\.3\.[3-7]/i.test(navigator['userAgent']),
-            isChrome: window['chrome'],
-            isFirefox: /Firefox/i.test(navigator['userAgent']),
+            'isAndroid': /Android/i.test(navigator['userAgent']),
+            'isGingerbread': /Android 2\.3\.[3-7]/i.test(navigator['userAgent']),
+            'isChrome': window['chrome'],
+            'isFirefox': /Firefox/i.test(navigator['userAgent']),
             /* Create a cached element for re-use when checking for CSS property prefixes. */
-            prefixElement: document['createElement']("div"),
+            'prefixElement': document['createElement']("div"),
             /* Cache every prefix match to avoid repeating lookups. */
-            prefixMatches: {},
+            'prefixMatches': {},
             /* Cache the anchor used for animating window scrolling. */
-            scrollAnchor: null,
+            'scrollAnchor': null,
             /* Cache the browser-specific property names associated with the scroll anchor. */
-            scrollPropertyLeft: null,
-            scrollPropertyTop: null,
+            'scrollPropertyLeft': null,
+            'scrollPropertyTop': null,
             /* Keep track of whether our RAF tick is running. */
-            isTicking: false,
+            'isTicking': false,
             /* Container for every in-progress call to Velocity. */
-            calls: []
+            'calls': []
         },
         /* Velocity's custom CSS stack. Made global for unit testing. */
         'CSS': { /* Defined below. */ },
@@ -874,10 +874,10 @@
             return calcBezier(getTForX(aX), mY1, mY2);
         };
 
-        f.getControlPoints = function() { return [{ x: mX1, y: mY1 }, { x: mX2, y: mY2 }]; };
+        f['getControlPoints'] = function() { return [{ x: mX1, y: mY1 }, { x: mX2, y: mY2 }]; };
 
         var str = "generateBezier(" + [mX1, mY1, mX2, mY2] + ")";
-        f.toString = function () { return str; };
+        f['toString'] = function () { return str; };
 
         return f;
     }
@@ -887,33 +887,33 @@
        then adjusts the time delta -- using the relation between actual time and duration -- to calculate the path for the duration-constrained animation. */
     var generateSpringRK4 = (function () {
         function springAccelerationForState (state) {
-            return (-state.tension * state.x) - (state.friction * state.v);
+            return (-state['tension'] * state['x']) - (state['friction'] * state['v']);
         }
 
         function springEvaluateStateWithDerivative (initialState, dt, derivative) {
             var state = {
-                x: initialState.x + derivative.dx * dt,
-                v: initialState.v + derivative.dv * dt,
-                tension: initialState.tension,
-                friction: initialState.friction
+                'x': initialState['x'] + derivative['dx'] * dt,
+                'v': initialState['v'] + derivative['dv'] * dt,
+                'tension': initialState['tension'],
+                'friction': initialState['friction']
             };
 
-            return { dx: state.v, dv: springAccelerationForState(state) };
+            return { dx: state['v'], dv: springAccelerationForState(state) };
         }
 
         function springIntegrateState (state, dt) {
             var a = {
-                    dx: state.v,
-                    dv: springAccelerationForState(state)
+                    'dx': state['v'],
+                    'dv': springAccelerationForState(state)
                 },
                 b = springEvaluateStateWithDerivative(state, dt * 0.5, a),
                 c = springEvaluateStateWithDerivative(state, dt * 0.5, b),
                 d = springEvaluateStateWithDerivative(state, dt, c),
-                dxdt = 1.0 / 6.0 * (a.dx + 2.0 * (b.dx + c.dx) + d.dx),
-                dvdt = 1.0 / 6.0 * (a.dv + 2.0 * (b.dv + c.dv) + d.dv);
+                dxdt = 1.0 / 6.0 * (a['dx'] + 2.0 * (b['dx'] + c['dx']) + d['dx']),
+                dvdt = 1.0 / 6.0 * (a['dv'] + 2.0 * (b['dv'] + c['dv']) + d['dv']);
 
-            state.x = state.x + dxdt * dt;
-            state.v = state.v + dvdt * dt;
+            state['x'] = state['x'] + dxdt * dt;
+            state['v'] = state['v'] + dvdt * dt;
 
             return state;
         }
@@ -921,10 +921,10 @@
         return function springRK4Factory (tension, friction, duration) {
 
             var initState = {
-                    x: -1,
-                    v: 0,
-                    tension: null,
-                    friction: null
+                    'x': -1,
+                    'v': 0,
+                    'tension': null,
+                    'friction': null
                 },
                 path = [0],
                 time_lapsed = 0,
@@ -936,8 +936,8 @@
             friction = parseFloat(friction) || 20;
             duration = duration || null;
 
-            initState.tension = tension;
-            initState.friction = friction;
+            initState['tension'] = tension;
+            initState['friction'] = friction;
 
             have_duration = duration !== null;
 
@@ -955,10 +955,10 @@
                 /* Next/step function .*/
                 last_state = springIntegrateState(last_state || initState, dt);
                 /* Store the position. */
-                path.push(1 + last_state.x);
+                path.push(1 + last_state['x']);
                 time_lapsed += 16;
                 /* If the change threshold is reached, break. */
-                if (!(Math.abs(last_state.x) > tolerance && Math.abs(last_state.v) > tolerance)) {
+                if (!(Math.abs(last_state['x']) > tolerance && Math.abs(last_state['v']) > tolerance)) {
                     break;
                 }
             }
@@ -971,10 +971,10 @@
 
     /* jQuery easings. */
     Velocity['Easings'] = {
-        linear: function(p) { return p; },
-        swing: function(p) { return 0.5 - Math.cos( p * Math.PI ) / 2 },
+        'linear': function(p) { return p; },
+        'swing': function(p) { return 0.5 - Math.cos( p * Math.PI ) / 2 },
         /* Bonus "spring" easing, which is a less exaggerated version of easeInOutElastic. */
-        spring: function(p) { return 1 - (Math.cos(p * 4.5 * Math.PI) * Math.exp(-p * 6)); }
+        'spring': function(p) { return 1 - (Math.cos(p * 4.5 * Math.PI) * Math.exp(-p * 6)); }
     };
 
     /* CSS3 and Robert Penner easings. */
@@ -1060,23 +1060,23 @@
             RegEx
         *************/
 
-        RegEx: {
-            isHex: /^#([A-f\d]{3}){1,2}$/i,
+        'RegEx': {
+            'isHex': /^#([A-f\d]{3}){1,2}$/i,
             /* Unwrap a property value's surrounding text, e.g. "rgba(4, 3, 2, 1)" ==> "4, 3, 2, 1" and "rect(4px 3px 2px 1px)" ==> "4px 3px 2px 1px". */
-            valueUnwrap: /^[A-z]+\((.*)\)$/i,
-            wrappedValueAlreadyExtracted: /[0-9.]+ [0-9.]+ [0-9.]+( [0-9.]+)?/,
+            'valueUnwrap': /^[A-z]+\((.*)\)$/i,
+            'wrappedValueAlreadyExtracted': /[0-9.]+ [0-9.]+ [0-9.]+( [0-9.]+)?/,
             /* Split a multi-value property into an array of subvalues, e.g. "rgba(4, 3, 2, 1) 4px 3px 2px 1px" ==> [ "rgba(4, 3, 2, 1)", "4px", "3px", "2px", "1px" ]. */
-            valueSplit: /([A-z]+\(.+\))|(([A-z0-9#-.]+?)(?=\s|$))/ig
+            'valueSplit': /([A-z]+\(.+\))|(([A-z0-9#-.]+?)(?=\s|$))/ig
         },
 
         /************
             Lists
         ************/
 
-        Lists: {
-            colors: [ "fill", "stroke", "stopColor", "color", "backgroundColor", "borderColor", "borderTopColor", "borderRightColor", "borderBottomColor", "borderLeftColor", "outlineColor" ],
-            transformsBase: [ "translateX", "translateY", "scale", "scaleX", "scaleY", "skewX", "skewY", "rotateZ" ],
-            transforms3D: [ "transformPerspective", "translateZ", "scaleZ", "rotateX", "rotateY" ]
+        'Lists': {
+            'colors': [ "fill", "stroke", "stopColor", "color", "backgroundColor", "borderColor", "borderTopColor", "borderRightColor", "borderBottomColor", "borderLeftColor", "outlineColor" ],
+            'transformsBase': [ "translateX", "translateY", "scale", "scaleX", "scaleY", "skewX", "skewY", "rotateZ" ],
+            'transforms3D': [ "transformPerspective", "translateZ", "scaleZ", "rotateX", "rotateY" ]
         },
 
         /************
@@ -1087,14 +1087,14 @@
            (e.g. "boxShadow: X Y Blur Spread Color") to be animated as if it were a discrete property. */
         /* Note: Beyond enabling fine-grained property animation, hooking is necessary since Velocity only
            tweens properties with single numeric values; unlike CSS transitions, Velocity does not interpolate compound-values. */
-        Hooks: {
+        'Hooks': {
             /********************
                 Registration
             ********************/
 
             /* Templates are a concise way of indicating which subproperties must be individually registered for each compound-value CSS property. */
             /* Each template consists of the compound-value's base name, its constituent subproperty names, and those subproperties' default values. */
-            templates: {
+            'templates': {
                 "textShadow": [ "Color X Y Blur", "black 0px 0px 0px" ],
                 "boxShadow": [ "Color X Y Blur Spread", "black 0px 0px 0px 0px" ],
                 "clip": [ "Top Right Bottom Left", "0px 0px 0px 0px" ],
@@ -1105,20 +1105,20 @@
 
             /* A "registered" hook is one that has been converted from its template form into a live,
                tweenable property. It contains data to associate it with its root property. */
-            registered: {
+            'registered': {
                 /* Note: A registered hook looks like this ==> textShadowBlur: [ "textShadow", 3 ],
                    which consists of the subproperty's name, the associated root property's name,
                    and the subproperty's position in the root's value. */
             },
             /* Convert the templates into individual hooks then append them to the registered object above. */
-            register: function () {
+            'register': function () {
                 /* Color hooks registration: Colors are defaulted to white -- as opposed to black -- since colors that are
                    currently set to "transparent" default to their respective template below when color-animated,
                    and white is typically a closer match to transparent than black is. An exception is made for text ("color"),
                    which is almost always set closer to black than white. */
-                for (var i = 0; i < CSS.Lists.colors.length; i++) {
-                    var rgbComponents = (CSS.Lists.colors[i] === "color") ? "0 0 0 1" : "255 255 255 1";
-                    CSS.Hooks.templates[CSS.Lists.colors[i]] = [ "Red Green Blue Alpha", rgbComponents ];
+                for (var i = 0; i < CSS['Lists']['colors'].length; i++) {
+                    var rgbComponents = (CSS['Lists']['colors'][i] === "color") ? "0 0 0 1" : "255 255 255 1";
+                    CSS['Hooks']['templates'][CSS['Lists']['colors'][i]] = [ "Red Green Blue Alpha", rgbComponents ];
                 }
 
                 var rootProperty,
@@ -1128,11 +1128,11 @@
                 /* In IE, color values inside compound-value properties are positioned at the end the value instead of at the beginning.
                    Thus, we re-arrange the templates accordingly. */
                 if (IE) {
-                    for (rootProperty in CSS.Hooks.templates) {
-                        hookTemplate = CSS.Hooks.templates[rootProperty];
+                    for (rootProperty in CSS['Hooks']['templates']) {
+                        hookTemplate = CSS['Hooks']['templates'][rootProperty];
                         hookNames = hookTemplate[0].split(" ");
 
-                        var defaultValues = hookTemplate[1].match(CSS.RegEx.valueSplit);
+                        var defaultValues = hookTemplate[1].match(CSS['RegEx']['valueSplit']);
 
                         if (hookNames[0] === "Color") {
                             /* Reposition both the hook's name and its default value to the end of their respective strings. */
@@ -1140,14 +1140,14 @@
                             defaultValues.push(defaultValues.shift());
 
                             /* Replace the existing template for the hook's root property. */
-                            CSS.Hooks.templates[rootProperty] = [ hookNames.join(" "), defaultValues.join(" ") ];
+                            CSS['Hooks']['templates'][rootProperty] = [ hookNames.join(" "), defaultValues.join(" ") ];
                         }
                     }
                 }
 
                 /* Hook registration. */
-                for (rootProperty in CSS.Hooks.templates) {
-                    hookTemplate = CSS.Hooks.templates[rootProperty];
+                for (rootProperty in CSS['Hooks']['templates']) {
+                    hookTemplate = CSS['Hooks']['templates'][rootProperty];
                     hookNames = hookTemplate[0].split(" ");
 
                     for (var i in hookNames) {
@@ -1156,7 +1156,7 @@
 
                         /* For each hook, register its full name (e.g. textShadowBlur) with its root property (e.g. textShadow)
                            and the hook's position in its template's default value string. */
-                        CSS.Hooks.registered[fullHookName] = [ rootProperty, hookPosition ];
+                        CSS['Hooks']['registered'][fullHookName] = [ rootProperty, hookPosition ];
                     }
                 }
             },
@@ -1167,8 +1167,8 @@
 
             /* Look up the root property associated with the hook (e.g. return "textShadow" for "textShadowBlur"). */
             /* Since a hook cannot be set directly (the browser won't recognize it), style updating for hooks is routed through the hook's root property. */
-            getRoot: function (property) {
-                var hookData = CSS.Hooks.registered[property];
+            'getRoot': function (property) {
+                var hookData = CSS['Hooks']['registered'][property];
 
                 if (hookData) {
                     return hookData[0];
@@ -1179,34 +1179,34 @@
             },
             /* Convert any rootPropertyValue, null or otherwise, into a space-delimited list of hook values so that
                the targeted hook can be injected or extracted at its standard position. */
-            cleanRootPropertyValue: function(rootProperty, rootPropertyValue) {
+            'cleanRootPropertyValue': function(rootProperty, rootPropertyValue) {
                 /* If the rootPropertyValue is wrapped with "rgb()", "clip()", etc., remove the wrapping to normalize the value before manipulation. */
-                if (CSS.RegEx.valueUnwrap.test(rootPropertyValue)) {
-                    rootPropertyValue = rootPropertyValue.match(CSS.RegEx.valueUnwrap)[1];
+                if (CSS['RegEx']['valueUnwrap'].test(rootPropertyValue)) {
+                    rootPropertyValue = rootPropertyValue.match(CSS['RegEx']['valueUnwrap'])[1];
                 }
 
                 /* If rootPropertyValue is a CSS null-value (from which there's inherently no hook value to extract),
-                   default to the root's default value as defined in CSS.Hooks.templates. */
+                   default to the root's default value as defined in CSS['Hooks']['templates']. */
                 /* Note: CSS null-values include "none", "auto", and "transparent". They must be converted into their
                    zero-values (e.g. textShadow: "none" ==> textShadow: "0px 0px 0px black") for hook manipulation to proceed. */
-                if (CSS.Values.isCSSNullValue(rootPropertyValue)) {
-                    rootPropertyValue = CSS.Hooks.templates[rootProperty][1];
+                if (CSS['Values']['isCSSNullValue'](rootPropertyValue)) {
+                    rootPropertyValue = CSS['Hooks']['templates'][rootProperty][1];
                 }
 
                 return rootPropertyValue;
             },
             /* Extracted the hook's value from its root property's value. This is used to get the starting value of an animating hook. */
-            extractValue: function (fullHookName, rootPropertyValue) {
-                var hookData = CSS.Hooks.registered[fullHookName];
+            'extractValue': function (fullHookName, rootPropertyValue) {
+                var hookData = CSS['Hooks']['registered'][fullHookName];
 
                 if (hookData) {
                     var hookRoot = hookData[0],
                         hookPosition = hookData[1];
 
-                    rootPropertyValue = CSS.Hooks.cleanRootPropertyValue(hookRoot, rootPropertyValue);
+                    rootPropertyValue = CSS['Hooks']['cleanRootPropertyValue'](hookRoot, rootPropertyValue);
 
                     /* Split rootPropertyValue into its constituent hook values then grab the desired hook at its standard position. */
-                    return rootPropertyValue.toString().match(CSS.RegEx.valueSplit)[hookPosition];
+                    return rootPropertyValue.toString().match(CSS['RegEx']['valueSplit'])[hookPosition];
                 } else {
                     /* If the provided fullHookName isn't a registered hook, return the rootPropertyValue that was passed in. */
                     return rootPropertyValue;
@@ -1214,8 +1214,8 @@
             },
             /* Inject the hook's value into its root property's value. This is used to piece back together the root property
                once Velocity has updated one of its individually hooked values through tweening. */
-            injectValue: function (fullHookName, hookValue, rootPropertyValue) {
-                var hookData = CSS.Hooks.registered[fullHookName];
+            'injectValue': function (fullHookName, hookValue, rootPropertyValue) {
+                var hookData = CSS['Hooks']['registered'][fullHookName];
 
                 if (hookData) {
                     var hookRoot = hookData[0],
@@ -1223,11 +1223,11 @@
                         rootPropertyValueParts,
                         rootPropertyValueUpdated;
 
-                    rootPropertyValue = CSS.Hooks.cleanRootPropertyValue(hookRoot, rootPropertyValue);
+                    rootPropertyValue = CSS['Hooks']['cleanRootPropertyValue'](hookRoot, rootPropertyValue);
 
                     /* Split rootPropertyValue into its individual hook values, replace the targeted value with hookValue,
                        then reconstruct the rootPropertyValue string. */
-                    rootPropertyValueParts = rootPropertyValue.toString().match(CSS.RegEx.valueSplit);
+                    rootPropertyValueParts = rootPropertyValue.toString().match(CSS['RegEx']['valueSplit']);
                     rootPropertyValueParts[hookPosition] = hookValue;
                     rootPropertyValueUpdated = rootPropertyValueParts.join(" ");
 
@@ -1245,11 +1245,11 @@
 
         /* Normalizations standardize CSS property manipulation by pollyfilling browser-specific implementations (e.g. opacity)
            and reformatting special properties (e.g. clip, rgba) to look like standard ones. */
-        Normalizations: {
+        'Normalizations': {
             /* Normalizations are passed a normalization target (either the property's name, its extracted value, or its injected value),
                the targeted element (which may need to be queried), and the targeted property value. */
-            registered: {
-                clip: function (type, element, propertyValue) {
+            'registered': {
+                'clip': function (type, element, propertyValue) {
                     switch (type) {
                         case "name":
                             return "clip";
@@ -1258,11 +1258,11 @@
                             var extracted;
 
                             /* If Velocity also extracted this value, skip extraction. */
-                            if (CSS.RegEx.wrappedValueAlreadyExtracted.test(propertyValue)) {
+                            if (CSS['RegEx']['wrappedValueAlreadyExtracted'].test(propertyValue)) {
                                 extracted = propertyValue;
                             } else {
                                 /* Remove the "rect()" wrapper. */
-                                extracted = propertyValue.toString().match(CSS.RegEx.valueUnwrap);
+                                extracted = propertyValue.toString().match(CSS['RegEx']['valueUnwrap']);
 
                                 /* Strip off commas. */
                                 extracted = extracted ? extracted[1].replace(/,(\s+)?/g, " ") : propertyValue;
@@ -1275,7 +1275,7 @@
                     }
                 },
 
-                blur: function(type, element, propertyValue) {
+                'blur': function(type, element, propertyValue) {
                     switch (type) {
                         case "name":
                             return Velocity['State']['isFirefox'] ? "filter" : "-webkit-filter";
@@ -1308,7 +1308,7 @@
                 },
 
                 /* <=IE8 do not support the standard opacity property. They use filter:alpha(opacity=INT) instead. */
-                opacity: function (type, element, propertyValue) {
+                'opacity': function (type, element, propertyValue) {
                     if (IE <= 8) {
                         switch (type) {
                             case "name":
@@ -1329,7 +1329,7 @@
                                 return propertyValue;
                             case "inject":
                                 /* Opacified elements are required to have their zoom property set to a non-zero value. */
-                                element.style.zoom = 1;
+                                element['style']['zoom'] = 1;
 
                                 /* Setting the filter property on elements with certain font property combinations can result in a
                                    highly unappealing ultra-bolding effect. There's no way to remedy this throughout a tween, but dropping the
@@ -1359,8 +1359,8 @@
                 Batched Registrations
             *****************************/
 
-            /* Note: Batched normalizations extend the CSS.Normalizations.registered object. */
-            register: function () {
+            /* Note: Batched normalizations extend the CSS['Normalizations']['registered'] object. */
+            'register': function () {
 
                 /*****************
                     Transforms
@@ -1369,7 +1369,7 @@
                 /* Transforms are the subproperties contained by the CSS "transform" property. Transforms must undergo normalization
                    so that they can be referenced in a properties map by their individual names. */
                 /* Note: When transforms are "set", they are actually assigned to a per-element transformCache. When all transform
-                   setting is complete complete, CSS.flushTransformCache() must be manually called to flush the values to the DOM.
+                   setting is complete complete, CSS['flushTransformCache']() must be manually called to flush the values to the DOM.
                    Transform setting is batched in this way to improve performance: the transform style only needs to be updated
                    once when multiple transform subproperties are being animated simultaneously. */
                 /* Note: IE9 and Android Gingerbread have support for 2D -- but not 3D -- transforms. Since animating unsupported
@@ -1379,16 +1379,16 @@
                 if (!(IE <= 9) && !Velocity['State']['isGingerbread']) {
                     /* Note: Since the standalone CSS "perspective" property and the CSS transform "perspective" subproperty
                     share the same name, the latter is given a unique token within Velocity: "transformPerspective". */
-                    CSS.Lists.transformsBase = CSS.Lists.transformsBase.concat(CSS.Lists.transforms3D);
+                    CSS['Lists']['transformsBase'] = CSS['Lists']['transformsBase'].concat(CSS['Lists']['transforms3D']);
                 }
 
-                for (var i = 0; i < CSS.Lists.transformsBase.length; i++) {
+                for (var i = 0; i < CSS['Lists']['transformsBase'].length; i++) {
                     /* Wrap the dynamically generated normalization function in a new scope so that transformName's value is
                     paired with its respective function. (Otherwise, all functions would take the final for loop's transformName.) */
                     (function() {
-                        var transformName = CSS.Lists.transformsBase[i];
+                        var transformName = CSS['Lists']['transformsBase'][i];
 
-                        CSS.Normalizations.registered[transformName] = function (type, element, propertyValue) {
+                        CSS['Normalizations']['registered'][transformName] = function (type, element, propertyValue) {
                             switch (type) {
                                 /* The normalized property name is the parent "transform" property -- the property that is actually set in CSS. */
                                 case "name":
@@ -1396,13 +1396,13 @@
                                 /* Transform values are cached onto a per-element transformCache object. */
                                 case "extract":
                                     /* If this transform has yet to be assigned a value, return its null value. */
-                                    if (Data(element) === undefined || Data(element).transformCache[transformName] === undefined) {
-                                        /* Scale CSS.Lists.transformsBase default to 1 whereas all other transform properties default to 0. */
+                                    if (Data(element) === undefined || Data(element)['transformCache'][transformName] === undefined) {
+                                        /* Scale CSS['Lists']['transformsBase'] default to 1 whereas all other transform properties default to 0. */
                                         return /^scale/i.test(transformName) ? 1 : 0;
                                     /* When transform values are set, they are wrapped in parentheses as per the CSS spec.
                                        Thus, when extracting their values (for tween calculations), we strip off the parentheses. */
                                     } else {
-                                        return Data(element).transformCache[transformName].replace(/[()]/g, "");
+                                        return Data(element)['transformCache'][transformName].replace(/[()]/g, "");
                                     }
                                 case "inject":
                                     var invalid = false;
@@ -1421,7 +1421,7 @@
                                             /* Chrome on Android has a bug in which scaled elements blur if their initial scale
                                                value is below 1 (which can happen with forcefeeding). Thus, we detect a yet-unset scale property
                                                and ensure that its first value is always 1. More info: http://stackoverflow.com/questions/10417890/css3-animations-with-transform-causes-blurred-elements-on-webkit/10417962#10417962 */
-                                            if (Velocity['State']['isAndroid'] && Data(element).transformCache[transformName] === undefined && propertyValue < 1) {
+                                            if (Velocity['State']['isAndroid'] && Data(element)['transformCache'][transformName] === undefined && propertyValue < 1) {
                                                 propertyValue = 1;
                                             }
 
@@ -1437,11 +1437,11 @@
 
                                     if (!invalid) {
                                         /* As per the CSS spec, wrap the value in parentheses. */
-                                        Data(element).transformCache[transformName] = "(" + propertyValue + ")";
+                                        Data(element)['transformCache'][transformName] = "(" + propertyValue + ")";
                                     }
 
                                     /* Although the value is set on the transformCache object, return the newly-updated value for the calling code to process as normal. */
-                                    return Data(element).transformCache[transformName];
+                                    return Data(element)['transformCache'][transformName];
                             }
                         };
                     })();
@@ -1452,15 +1452,15 @@
                 *************/
 
                 /* Since Velocity only animates a single numeric value per property, color animation is achieved by hooking the individual RGBA components of CSS color properties.
-                   Accordingly, color values must be normalized (e.g. "#ff0000", "red", and "rgb(255, 0, 0)" ==> "255 0 0 1") so that their components can be injected/extracted by CSS.Hooks logic. */
-                for (var i = 0; i < CSS.Lists.colors.length; i++) {
+                   Accordingly, color values must be normalized (e.g. "#ff0000", "red", and "rgb(255, 0, 0)" ==> "255 0 0 1") so that their components can be injected/extracted by CSS['Hooks'] logic. */
+                for (var i = 0; i < CSS['Lists']['colors'].length; i++) {
                     /* Wrap the dynamically generated normalization function in a new scope so that colorName's value is paired with its respective function.
                        (Otherwise, all functions would take the final for loop's colorName.) */
                     (function () {
-                        var colorName = CSS.Lists.colors[i];
+                        var colorName = CSS['Lists']['colors'][i];
 
                         /* Note: In IE<=8, which support rgb but not rgba, color properties are reverted to rgb by stripping off the alpha component. */
-                        CSS.Normalizations.registered[colorName] = function(type, element, propertyValue) {
+                        CSS['Normalizations']['registered'][colorName] = function(type, element, propertyValue) {
                             switch (type) {
                                 case "name":
                                     return colorName;
@@ -1469,17 +1469,17 @@
                                     var extracted;
 
                                     /* If the color is already in its hookable form (e.g. "255 255 255 1") due to having been previously extracted, skip extraction. */
-                                    if (CSS.RegEx.wrappedValueAlreadyExtracted.test(propertyValue)) {
+                                    if (CSS['RegEx']['wrappedValueAlreadyExtracted'].test(propertyValue)) {
                                         extracted = propertyValue;
                                     } else {
                                         var converted,
                                             colorNames = {
-                                                black: "rgb(0, 0, 0)",
-                                                blue: "rgb(0, 0, 255)",
-                                                gray: "rgb(128, 128, 128)",
-                                                green: "rgb(0, 128, 0)",
-                                                red: "rgb(255, 0, 0)",
-                                                white: "rgb(255, 255, 255)"
+                                                'black': "rgb(0, 0, 0)",
+                                                'blue': "rgb(0, 0, 255)",
+                                                'gray': "rgb(128, 128, 128)",
+                                                'green': "rgb(0, 128, 0)",
+                                                'red': "rgb(255, 0, 0)",
+                                                'white': "rgb(255, 255, 255)"
                                             };
 
                                         /* Convert color names to rgb. */
@@ -1488,19 +1488,19 @@
                                                 converted = colorNames[propertyValue]
                                             } else {
                                                 /* If an unmatched color name is provided, default to black. */
-                                                converted = colorNames.black;
+                                                converted = colorNames['black'];
                                             }
                                         /* Convert hex values to rgb. */
-                                        } else if (CSS.RegEx.isHex.test(propertyValue)) {
-                                            converted = "rgb(" + CSS.Values.hexToRgb(propertyValue).join(" ") + ")";
+                                        } else if (CSS['RegEx']['isHex'].test(propertyValue)) {
+                                            converted = "rgb(" + CSS['Values']['hexToRgb'](propertyValue).join(" ") + ")";
                                         /* If the provided color doesn't match any of the accepted color formats, default to black. */
                                         } else if (!(/^rgba?\(/i.test(propertyValue))) {
-                                            converted = colorNames.black;
+                                            converted = colorNames['black'];
                                         }
 
                                         /* Remove the surrounding "rgb/rgba()" string then replace commas with spaces and strip
                                            repeated spaces (in case the value included spaces to begin with). */
-                                        extracted = (converted || propertyValue).toString().match(CSS.RegEx.valueUnwrap)[1].replace(/,(\s+)?/g, " ");
+                                        extracted = (converted || propertyValue).toString().match(CSS['RegEx']['valueUnwrap'])[1].replace(/,(\s+)?/g, " ");
                                     }
 
                                     /* So long as this isn't <=IE8, add a fourth (alpha) component if it's missing and default it to 1 (visible). */
@@ -1534,17 +1534,17 @@
            CSS Property Names
         ************************/
 
-        Names: {
+        'Names': {
             /* Camelcase a property name into its JavaScript notation (e.g. "background-color" ==> "backgroundColor").
                Camelcasing is used to normalize property names between and across calls. */
-            camelCase: function (property) {
+            'camelCase': function (property) {
                 return property.replace(/-(\w)/g, function (match, subMatch) {
                     return subMatch.toUpperCase();
                 });
             },
 
             /* For SVG elements, some properties (namely, dimensional ones) are GET/SET via the element's HTML attributes (instead of via CSS styles). */
-            SVGAttribute: function (property) {
+            'SVGAttribute': function (property) {
                 var SVGAttributes = "width|height|x|y|cx|cy|r|rx|ry|x1|x2|y1|y2";
 
                 /* Certain browsers require an SVG transform to be applied as an attribute. (Otherwise, application via CSS is preferable due to 3D support.) */
@@ -1558,7 +1558,7 @@
             /* Determine whether a property should be set with a vendor prefix. */
             /* If a prefixed version of the property exists, return it. Otherwise, return the original property name.
                If the property is not at all supported by the browser, return a false flag. */
-            prefixCheck: function (property) {
+            'prefixCheck': function (property) {
                 /* If this property has already been checked, return the cached value. */
                 if (Velocity['State']['prefixMatches'][property]) {
                     return [ Velocity['State']['prefixMatches'][property], true ];
@@ -1594,9 +1594,9 @@
            CSS Property Values
         ************************/
 
-        Values: {
+        'Values': {
             /* Hex to RGB conversion. Copyright Tim Down: http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb */
-            hexToRgb: function (hex) {
+            'hexToRgb': function (hex) {
                 var shortformRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i,
                     longformRegex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
                     rgbParts;
@@ -1610,7 +1610,7 @@
                 return rgbParts ? [ parseInt(rgbParts[1], 16), parseInt(rgbParts[2], 16), parseInt(rgbParts[3], 16) ] : [ 0, 0, 0 ];
             },
 
-            isCSSNullValue: function (value) {
+            'isCSSNullValue': function (value) {
                 /* The browser defaults CSS values that have not been set to either 0 or one of several possible null-value strings.
                    Thus, we check for both falsiness and these special strings. */
                 /* Null-value checking is performed to default the special strings to 0 (for the sake of tweening) or their hook
@@ -1620,7 +1620,7 @@
             },
 
             /* Retrieve a property's default unit type. Used for assigning a unit type when one is not supplied by the user. */
-            getUnitType: function (property) {
+            'getUnitType': function (property) {
                 if (/^(rotate|skew)/i.test(property)) {
                     return "deg";
                 } else if (/(^(scale|scaleX|scaleY|scaleZ|alpha|flexGrow|flexHeight|zIndex|fontWeight)$)|((opacity|red|green|blue|alpha)$)/i.test(property)) {
@@ -1634,8 +1634,8 @@
 
             /* HTML elements default to an associated display type when they're not set to display:none. */
             /* Note: This function is used for correctly setting the non-"none" display value in certain Velocity redirects, such as fadeIn/Out. */
-            getDisplayType: function (element) {
-                var tagName = element && element.tagName.toString().toLowerCase();
+            'getDisplayType': function (element) {
+                var tagName = element && element['tagName'].toString().toLowerCase();
 
                 if (/^(b|big|i|small|tt|abbr|acronym|cite|code|dfn|em|kbd|strong|samp|var|a|bdo|br|img|map|object|q|script|span|sub|sup|button|input|label|select|textarea)$/i.test(tagName)) {
                     return "inline";
@@ -1654,19 +1654,19 @@
             },
 
             /* The class add/remove functions are used to temporarily apply a "velocity-animating" class to elements while they're animating. */
-            addClass: function (element, className) {
-                if (element.classList) {
-                    element.classList.add(className);
+            'addClass': function (element, className) {
+                if (element['classList']) {
+                    element['classList']['add'](className);
                 } else {
-                    element.className += (element.className.length ? " " : "") + className;
+                    element['className'] += (element['className'].length ? " " : "") + className;
                 }
             },
 
-            removeClass: function (element, className) {
-                if (element.classList) {
-                    element.classList.remove(className);
+            'removeClass': function (element, className) {
+                if (element['classList']) {
+                    element['classList']['remove'](className);
                 } else {
-                    element.className = element.className.toString().replace(new RegExp("(^|\\s)" + className.split(" ").join("|") + "(\\s|$)", "gi"), " ");
+                    element['className'] = element['className'].toString().replace(new RegExp("(^|\\s)" + className.split(" ").join("|") + "(\\s|$)", "gi"), " ");
                 }
             }
         },
@@ -1676,7 +1676,7 @@
         ****************************/
 
         /* The singular getPropertyValue, which routes the logic for all normalizations, hooks, and standard CSS properties. */
-        getPropertyValue: function (element, property, rootPropertyValue, forceStyleLookup) {
+        'getPropertyValue': function (element, property, rootPropertyValue, forceStyleLookup) {
             /* Get an element's computed property value. */
             /* Note: Retrieving the value of a CSS property cannot simply be performed by checking an element's
                style attribute (which only reflects user-defined values). Instead, the browser must be queried for a property's
@@ -1701,25 +1701,25 @@
                        toggle display to the element type's default value. */
                     var toggleDisplay = false;
 
-                    if (/^(width|height)$/.test(property) && CSS.getPropertyValue(element, "display") === 0) {
+                    if (/^(width|height)$/.test(property) && CSS['getPropertyValue'](element, "display") === 0) {
                         toggleDisplay = true;
-                        CSS.setPropertyValue(element, "display", CSS.Values.getDisplayType(element));
+                        CSS['setPropertyValue'](element, "display", CSS['Values']['getDisplayType'](element));
                     }
 
                     function revertDisplay () {
                         if (toggleDisplay) {
-                            CSS.setPropertyValue(element, "display", "none");
+                            CSS['setPropertyValue'](element, "display", "none");
                         }
                     }
 
                     if (!forceStyleLookup) {
-                        if (property === "height" && CSS.getPropertyValue(element, "boxSizing").toString().toLowerCase() !== "border-box") {
-                            var contentBoxHeight = element.offsetHeight - (parseFloat(CSS.getPropertyValue(element, "borderTopWidth")) || 0) - (parseFloat(CSS.getPropertyValue(element, "borderBottomWidth")) || 0) - (parseFloat(CSS.getPropertyValue(element, "paddingTop")) || 0) - (parseFloat(CSS.getPropertyValue(element, "paddingBottom")) || 0);
+                        if (property === "height" && CSS['getPropertyValue'](element, "boxSizing").toString().toLowerCase() !== "border-box") {
+                            var contentBoxHeight = element['offsetHeight'] - (parseFloat(CSS['getPropertyValue'](element, "borderTopWidth")) || 0) - (parseFloat(CSS['getPropertyValue'](element, "borderBottomWidth")) || 0) - (parseFloat(CSS['getPropertyValue'](element, "paddingTop")) || 0) - (parseFloat(CSS['getPropertyValue'](element, "paddingBottom")) || 0);
                             revertDisplay();
 
                             return contentBoxHeight;
-                        } else if (property === "width" && CSS.getPropertyValue(element, "boxSizing").toString().toLowerCase() !== "border-box") {
-                            var contentBoxWidth = element.offsetWidth - (parseFloat(CSS.getPropertyValue(element, "borderLeftWidth")) || 0) - (parseFloat(CSS.getPropertyValue(element, "borderRightWidth")) || 0) - (parseFloat(CSS.getPropertyValue(element, "paddingLeft")) || 0) - (parseFloat(CSS.getPropertyValue(element, "paddingRight")) || 0);
+                        } else if (property === "width" && CSS['getPropertyValue'](element, "boxSizing").toString().toLowerCase() !== "border-box") {
+                            var contentBoxWidth = element['offsetWidth'] - (parseFloat(CSS['getPropertyValue'](element, "borderLeftWidth")) || 0) - (parseFloat(CSS['getPropertyValue'](element, "borderRightWidth")) || 0) - (parseFloat(CSS['getPropertyValue'](element, "paddingLeft")) || 0) - (parseFloat(CSS['getPropertyValue'](element, "paddingRight")) || 0);
                             revertDisplay();
 
                             return contentBoxWidth;
@@ -1733,11 +1733,11 @@
                     if (Data(element) === undefined) {
                         computedStyle = window['getComputedStyle'](element, null); /* GET */
                     /* If the computedStyle object has yet to be cached, do so now. */
-                    } else if (!Data(element).computedStyle) {
-                        computedStyle = Data(element).computedStyle = window['getComputedStyle'](element, null); /* GET */
+                    } else if (!Data(element)['computedStyle']) {
+                        computedStyle = Data(element)['computedStyle'] = window['getComputedStyle'](element, null); /* GET */
                     /* If computedStyle is cached, use it. */
                     } else {
-                        computedStyle = Data(element).computedStyle;
+                        computedStyle = Data(element)['computedStyle'];
                     }
 
                     /* IE and Firefox do not return a value for the generic borderColor -- they only return individual values for each border side's color.
@@ -1750,7 +1750,7 @@
                     /* IE9 has a bug in which the "filter" property must be accessed from computedStyle using the getPropertyValue method
                        instead of a direct property lookup. The getPropertyValue method is slower than a direct lookup, which is why we avoid it by default. */
                     if (IE === 9 && property === "filter") {
-                        computedValue = computedStyle.getPropertyValue(property); /* GET */
+                        computedValue = computedStyle['getPropertyValue'](property); /* GET */
                     } else {
                         computedValue = computedStyle[property];
                     }
@@ -1758,7 +1758,7 @@
                     /* Fall back to the property's style value (if defined) when computedValue returns nothing,
                        which can happen when the element hasn't been painted. */
                     if (computedValue === "" || computedValue === null) {
-                        computedValue = element.style[property];
+                        computedValue = element['style'][property];
                     }
 
                     revertDisplay();
@@ -1779,7 +1779,7 @@
                        Not a big deal since we're currently in a GET batch anyway. */
                     if (position === "fixed" || (position === "absolute" && /top|left/i.test(property))) {
                         /* Note: jQuery strips the pixel unit from its returned values; we re-add it here to conform with computePropertyValue's behavior. */
-                        computedValue = $(element).position()[property] + "px"; /* GET */
+                        computedValue = $(element)['position']()[property] + "px"; /* GET */
                     }
                 }
 
@@ -1789,78 +1789,78 @@
             var propertyValue;
 
             /* If this is a hooked property (e.g. "clipLeft" instead of the root property of "clip"),
-               extract the hook's value from a normalized rootPropertyValue using CSS.Hooks.extractValue(). */
-            if (CSS.Hooks.registered[property]) {
+               extract the hook's value from a normalized rootPropertyValue using CSS['Hooks']['extractValue'](). */
+            if (CSS['Hooks']['registered'][property]) {
                 var hook = property,
-                    hookRoot = CSS.Hooks.getRoot(hook);
+                    hookRoot = CSS['Hooks']['getRoot'](hook);
 
                 /* If a cached rootPropertyValue wasn't passed in (which Velocity always attempts to do in order to avoid requerying the DOM),
                    query the DOM for the root property's value. */
                 if (rootPropertyValue === undefined) {
                     /* Since the browser is now being directly queried, use the official post-prefixing property name for this lookup. */
-                    rootPropertyValue = CSS.getPropertyValue(element, CSS.Names.prefixCheck(hookRoot)[0]); /* GET */
+                    rootPropertyValue = CSS['getPropertyValue'](element, CSS['Names']['prefixCheck'](hookRoot)[0]); /* GET */
                 }
 
                 /* If this root has a normalization registered, peform the associated normalization extraction. */
-                if (CSS.Normalizations.registered[hookRoot]) {
-                    rootPropertyValue = CSS.Normalizations.registered[hookRoot]("extract", element, rootPropertyValue);
+                if (CSS['Normalizations']['registered'][hookRoot]) {
+                    rootPropertyValue = CSS['Normalizations']['registered'][hookRoot]("extract", element, rootPropertyValue);
                 }
 
                 /* Extract the hook's value. */
-                propertyValue = CSS.Hooks.extractValue(hook, rootPropertyValue);
+                propertyValue = CSS['Hooks']['extractValue'](hook, rootPropertyValue);
 
             /* If this is a normalized property (e.g. "opacity" becomes "filter" in <=IE8) or "translateX" becomes "transform"),
                normalize the property's name and value, and handle the special case of transforms. */
             /* Note: Normalizing a property is mutually exclusive from hooking a property since hook-extracted values are strictly
                numerical and therefore do not require normalization extraction. */
-            } else if (CSS.Normalizations.registered[property]) {
+            } else if (CSS['Normalizations']['registered'][property]) {
                 var normalizedPropertyName,
                     normalizedPropertyValue;
 
-                normalizedPropertyName = CSS.Normalizations.registered[property]("name", element);
+                normalizedPropertyName = CSS['Normalizations']['registered'][property]("name", element);
 
                 /* Transform values are calculated via normalization extraction (see below), which checks against the element's transformCache.
                    At no point do transform GETs ever actually query the DOM; initial stylesheet values are never processed.
                    This is because parsing 3D transform matrices is not always accurate and would bloat our codebase;
                    thus, normalization extraction defaults initial transform values to their zero-values (e.g. 1 for scaleX and 0 for translateX). */
                 if (normalizedPropertyName !== "transform") {
-                    normalizedPropertyValue = computePropertyValue(element, CSS.Names.prefixCheck(normalizedPropertyName)[0]); /* GET */
+                    normalizedPropertyValue = computePropertyValue(element, CSS['Names']['prefixCheck'](normalizedPropertyName)[0]); /* GET */
 
                     /* If the value is a CSS null-value and this property has a hook template, use that zero-value template so that hooks can be extracted from it. */
-                    if (CSS.Values.isCSSNullValue(normalizedPropertyValue) && CSS.Hooks.templates[property]) {
-                        normalizedPropertyValue = CSS.Hooks.templates[property][1];
+                    if (CSS['Values']['isCSSNullValue'](normalizedPropertyValue) && CSS['Hooks']['templates'][property]) {
+                        normalizedPropertyValue = CSS['Hooks']['templates'][property][1];
                     }
                 }
 
-                propertyValue = CSS.Normalizations.registered[property]("extract", element, normalizedPropertyValue);
+                propertyValue = CSS['Normalizations']['registered'][property]("extract", element, normalizedPropertyValue);
             }
 
             /* If a (numeric) value wasn't produced via hook extraction or normalization, query the DOM. */
             if (!/^[\d-]/.test(propertyValue)) {
                 /* For SVG elements, dimensional properties (which SVGAttribute() detects) are tweened via
                    their HTML attribute values instead of their CSS style values. */
-                if (Data(element) && Data(element).isSVG && CSS.Names.SVGAttribute(property)) {
+                if (Data(element) && Data(element)['isSVG'] && CSS['Names']['SVGAttribute'](property)) {
                     /* Since the height/width attribute values must be set manually, they don't reflect computed values.
                        Thus, we use use getBBox() to ensure we always get values for elements with undefined height/width attributes. */
                     if (/^(height|width)$/i.test(property)) {
                         /* Firefox throws an error if .getBBox() is called on an SVG that isn't attached to the DOM. */
                         try {
-                            propertyValue = element.getBBox()[property];
+                            propertyValue = element['getBBox']()[property];
                         } catch (error) {
                             propertyValue = 0;
                         }
                     /* Otherwise, access the attribute value directly. */
                     } else {
-                        propertyValue = element.getAttribute(property);
+                        propertyValue = element['getAttribute'](property);
                     }
                 } else {
-                    propertyValue = computePropertyValue(element, CSS.Names.prefixCheck(property)[0]); /* GET */
+                    propertyValue = computePropertyValue(element, CSS['Names']['prefixCheck'](property)[0]); /* GET */
                 }
             }
 
             /* Since property lookups are for animation purposes (which entails computing the numeric delta between start and end values),
                convert CSS null-values to an integer of value 0. */
-            if (CSS.Values.isCSSNullValue(propertyValue)) {
+            if (CSS['Values']['isCSSNullValue'](propertyValue)) {
                 propertyValue = 0;
             }
 
@@ -1870,68 +1870,68 @@
         },
 
         /* The singular setPropertyValue, which routes the logic for all normalizations, hooks, and standard CSS properties. */
-        setPropertyValue: function(element, property, propertyValue, rootPropertyValue, scrollData) {
+        'setPropertyValue': function(element, property, propertyValue, rootPropertyValue, scrollData) {
             var propertyName = property;
 
             /* In order to be subjected to call options and element queueing, scroll animation is routed through Velocity as if it were a standard CSS property. */
             if (property === "scroll") {
                 /* If a container option is present, scroll the container instead of the browser window. */
-                if (scrollData.container) {
-                    scrollData.container["scroll" + scrollData.direction] = propertyValue;
+                if (scrollData['container']) {
+                    scrollData['container']["scroll" + scrollData['direction']] = propertyValue;
                 /* Otherwise, Velocity defaults to scrolling the browser window. */
                 } else {
-                    if (scrollData.direction === "Left") {
-                        window['scrollTo'](propertyValue, scrollData.alternateValue);
+                    if (scrollData['direction'] === "Left") {
+                        window['scrollTo'](propertyValue, scrollData['alternateValue']);
                     } else {
-                        window['scrollTo'](scrollData.alternateValue, propertyValue);
+                        window['scrollTo'](scrollData['alternateValue'], propertyValue);
                     }
                 }
             } else {
                 /* Transforms (translateX, rotateZ, etc.) are applied to a per-element transformCache object, which is manually flushed via flushTransformCache().
                    Thus, for now, we merely cache transforms being SET. */
-                if (CSS.Normalizations.registered[property] && CSS.Normalizations.registered[property]("name", element) === "transform") {
+                if (CSS['Normalizations']['registered'][property] && CSS['Normalizations']['registered'][property]("name", element) === "transform") {
                     /* Perform a normalization injection. */
                     /* Note: The normalization logic handles the transformCache updating. */
-                    CSS.Normalizations.registered[property]("inject", element, propertyValue);
+                    CSS['Normalizations']['registered'][property]("inject", element, propertyValue);
 
                     propertyName = "transform";
-                    propertyValue = Data(element).transformCache[property];
+                    propertyValue = Data(element)['transformCache'][property];
                 } else {
                     /* Inject hooks. */
-                    if (CSS.Hooks.registered[property]) {
+                    if (CSS['Hooks']['registered'][property]) {
                         var hookName = property,
-                            hookRoot = CSS.Hooks.getRoot(property);
+                            hookRoot = CSS['Hooks']['getRoot'](property);
 
                         /* If a cached rootPropertyValue was not provided, query the DOM for the hookRoot's current value. */
-                        rootPropertyValue = rootPropertyValue || CSS.getPropertyValue(element, hookRoot); /* GET */
+                        rootPropertyValue = rootPropertyValue || CSS['getPropertyValue'](element, hookRoot); /* GET */
 
-                        propertyValue = CSS.Hooks.injectValue(hookName, propertyValue, rootPropertyValue);
+                        propertyValue = CSS['Hooks']['injectValue'](hookName, propertyValue, rootPropertyValue);
                         property = hookRoot;
                     }
 
                     /* Normalize names and values. */
-                    if (CSS.Normalizations.registered[property]) {
-                        propertyValue = CSS.Normalizations.registered[property]("inject", element, propertyValue);
-                        property = CSS.Normalizations.registered[property]("name", element);
+                    if (CSS['Normalizations']['registered'][property]) {
+                        propertyValue = CSS['Normalizations']['registered'][property]("inject", element, propertyValue);
+                        property = CSS['Normalizations']['registered'][property]("name", element);
                     }
 
                     /* Assign the appropriate vendor prefix before performing an official style update. */
-                    propertyName = CSS.Names.prefixCheck(property)[0];
+                    propertyName = CSS['Names']['prefixCheck'](property)[0];
 
                     /* A try/catch is used for IE<=8, which throws an error when "invalid" CSS values are set, e.g. a negative width.
                        Try/catch is avoided for other browsers since it incurs a performance overhead. */
                     if (IE <= 8) {
                         try {
-                            element.style[propertyName] = propertyValue;
+                            element['style'][propertyName] = propertyValue;
                         } catch (error) { if (Velocity['debug']) console.log("Browser does not support [" + propertyValue + "] for [" + propertyName + "]"); }
                     /* SVG elements have their dimensional properties (width, height, x, y, cx, etc.) applied directly as attributes instead of as styles. */
                     /* Note: IE8 does not support SVG elements, so it's okay that we skip it for SVG animation. */
-                    } else if (Data(element) && Data(element).isSVG && CSS.Names.SVGAttribute(property)) {
+                    } else if (Data(element) && Data(element)['isSVG'] && CSS['Names']['SVGAttribute'](property)) {
                         /* Note: For SVG attributes, vendor-prefixed property names are never used. */
                         /* Note: Not all CSS properties can be animated via attributes, but the browser won't throw an error for unsupported properties. */
-                        element.setAttribute(property, propertyValue);
+                        element['setAttribute'](property, propertyValue);
                     } else {
-                        element.style[propertyName] = propertyValue;
+                        element['style'][propertyName] = propertyValue;
                     }
 
                     if (Velocity['debug'] >= 2) console.log("Set " + property + " (" + propertyName + "): " + propertyValue);
@@ -1944,34 +1944,34 @@
 
         /* To increase performance by batching transform updates into a single SET, transforms are not directly applied to an element until flushTransformCache() is called. */
         /* Note: Velocity applies transform properties in the same order that they are chronogically introduced to the element's CSS styles. */
-        flushTransformCache: function(element) {
+        'flushTransformCache': function(element) {
             var transformString = "";
 
             /* Certain browsers require that SVG transforms be applied as an attribute. However, the SVG transform attribute takes a modified version of CSS's transform string
                (units are dropped and, except for skewX/Y, subproperties are merged into their master property -- e.g. scaleX and scaleY are merged into scale(X Y). */
-            if ((IE || (Velocity['State']['isAndroid'] && !Velocity['State']['isChrome'])) && Data(element).isSVG) {
+            if ((IE || (Velocity['State']['isAndroid'] && !Velocity['State']['isChrome'])) && Data(element)['isSVG']) {
                 /* Since transform values are stored in their parentheses-wrapped form, we use a helper function to strip out their numeric values.
                    Further, SVG transform properties only take unitless (representing pixels) values, so it's okay that parseFloat() strips the unit suffixed to the float value. */
                 function getTransformFloat (transformProperty) {
-                    return parseFloat(CSS.getPropertyValue(element, transformProperty));
+                    return parseFloat(CSS['getPropertyValue'](element, transformProperty));
                 }
 
                 /* Create an object to organize all the transforms that we'll apply to the SVG element. To keep the logic simple,
                    we process *all* transform properties -- even those that may not be explicitly applied (since they default to their zero-values anyway). */
                 var SVGTransforms = {
-                    translate: [ getTransformFloat("translateX"), getTransformFloat("translateY") ],
-                    skewX: [ getTransformFloat("skewX") ], skewY: [ getTransformFloat("skewY") ],
+                    'translate': [ getTransformFloat("translateX"), getTransformFloat("translateY") ],
+                    'skewX': [ getTransformFloat("skewX") ], skewY: [ getTransformFloat("skewY") ],
                     /* If the scale property is set (non-1), use that value for the scaleX and scaleY values
                        (this behavior mimics the result of animating all these properties at once on HTML elements). */
-                    scale: getTransformFloat("scale") !== 1 ? [ getTransformFloat("scale"), getTransformFloat("scale") ] : [ getTransformFloat("scaleX"), getTransformFloat("scaleY") ],
+                    'scale': getTransformFloat("scale") !== 1 ? [ getTransformFloat("scale"), getTransformFloat("scale") ] : [ getTransformFloat("scaleX"), getTransformFloat("scaleY") ],
                     /* Note: SVG's rotate transform takes three values: rotation degrees followed by the X and Y values
                        defining the rotation's origin point. We ignore the origin values (default them to 0). */
-                    rotate: [ getTransformFloat("rotateZ"), 0, 0 ]
+                    'rotate': [ getTransformFloat("rotateZ"), 0, 0 ]
                 };
 
                 /* Iterate through the transform properties in the user-defined property map order.
                    (This mimics the behavior of non-SVG transform animation.) */
-                $['each'](Data(element).transformCache, function(transformName) {
+                $['each'](Data(element)['transformCache'], function(transformName) {
                     /* Except for with skewX/Y, revert the axis-specific transform subproperties to their axis-free master
                        properties so that they match up with SVG's accepted transform properties. */
                     if (/^translate/i.test(transformName)) {
@@ -1997,8 +1997,8 @@
                     perspective;
 
                 /* Transform properties are stored as members of the transformCache object. Concatenate all the members into a string. */
-                $['each'](Data(element).transformCache, function(transformName) {
-                    transformValue = Data(element).transformCache[transformName];
+                $['each'](Data(element)['transformCache'], function(transformName) {
+                    transformValue = Data(element)['transformCache'][transformName];
 
                     /* Transform's perspective subproperty must be set first in order to take effect. Store it temporarily. */
                     if (transformName === "transformPerspective") {
@@ -2020,13 +2020,13 @@
                 }
             }
 
-            CSS.setPropertyValue(element, "transform", transformString);
+            CSS['setPropertyValue'](element, "transform", transformString);
         }
     };
 
     /* Register hooks and normalizations. */
-    CSS.Hooks.register();
-    CSS.Normalizations.register();
+    CSS['Hooks']['register']();
+    CSS['Normalizations']['register']();
 
     /* Allow hook setting in the same fashion as jQuery's $['css'](). */
     Velocity['hook'] = function (elements, arg2, arg3) {
@@ -2074,14 +2074,10 @@
 
         /* Logic for determining what to return to the call stack when exiting out of Velocity. */
         function getChain () {
-            /* If we are using the utility function, attempt to return this call's promise. If no promise library was detected,
-               default to null instead of returning the targeted elements so that utility function's return value is standardized. */
-            if (isUtility) {
-                return promiseData.promise || null;
-            /* Otherwise, if we're using $['fn'], return the jQuery-/Zepto-wrapped element set. */
-            } else {
-                return elementsWrapped;
-            }
+          // Attempt to return this call's promise. If no promise library was detected,
+          // default to null instead of returning the targeted elements so that
+          // utility function's return value is standardized.
+          return promiseData['promise'] || null;
         }
 
         /*************************
@@ -2091,9 +2087,7 @@
         /* To allow for expressive CoffeeScript code, Velocity supports an alternative syntax in which "elements" (or "e"), "properties" (or "p"), and "options" (or "o")
            objects are defined on a container object that's passed in as Velocity's sole argument. */
         /* Note: Some browsers automatically populate arguments with a "properties" object. We detect it by checking for its default "names" property. */
-        var syntacticSugar = (arguments[0] && (arguments[0].p || (($['isPlainObject'](arguments[0].properties) && !arguments[0].properties.names) || isString(arguments[0].properties))));
-        /* Whether Velocity was called via the utility function (as opposed to on a jQuery/Zepto object). */
-        var isUtility;
+        var syntacticSugar = (arguments[0] && (arguments[0]['p'] || (($['isPlainObject'](arguments[0]['properties']) && !arguments[0]['properties']['names']) || isString(arguments[0]['properties']))));
         /* When Velocity is called via the utility function ($['Velocity']()/Velocity()), elements are explicitly
            passed in as the first parameter. Thus, argument positioning varies. We normalize them here. */
         var elementsWrapped;
@@ -2103,10 +2097,9 @@
         var propertiesMap;
         var options;
 
-        isUtility = true;
         argumentIndex = 1;
         elements = syntacticSugar
-          ? arguments[0].elements || arguments[0].e
+          ? arguments[0]['elements'] || arguments[0]['e']
           : arguments[0];
 
         elements = sanitizeElements(elements);
@@ -2114,8 +2107,8 @@
         if (!elements) return;
 
         if (syntacticSugar) {
-            propertiesMap = arguments[0].properties || arguments[0].p;
-            options = arguments[0].options || arguments[0].o;
+            propertiesMap = arguments[0]['properties'] || arguments[0]['p'];
+            options = arguments[0]['options'] || arguments[0]['o'];
         } else {
             propertiesMap = arguments[argumentIndex];
             options = arguments[argumentIndex + 1];
@@ -2123,8 +2116,8 @@
 
         /* The length of the element set (in the form of a nodeList or an array of elements) is defaulted to 1 in case a
            single raw DOM element is passed in (which doesn't contain a length property). */
-        var elementsLength = elements.length,
-            elementsIndex = 0;
+        var elementsLength = elements.length;
+        var elementsIndex = 0;
 
         /***************************
             Argument Overloading
@@ -2145,13 +2138,13 @@
                 /* Note: The following RegEx will return true if passed an array with a number as its first item.
                    Thus, arrays are skipped from this check. */
                 if (!isArray(arguments[i]) && (/^(fast|normal|slow)$/i.test(arguments[i]) || /^\d/.test(arguments[i]))) {
-                    options.duration = arguments[i];
+                    options['duration'] = arguments[i];
                 /* Treat strings and arrays as easings. */
                 } else if (isString(arguments[i]) || isArray(arguments[i])) {
-                    options.easing = arguments[i];
+                    options['easing'] = arguments[i];
                 /* Treat a function as a complete callback. */
                 } else if (isFunc(arguments[i])) {
-                    options.complete = arguments[i];
+                    options['complete'] = arguments[i];
                 }
             }
         }
@@ -2161,9 +2154,9 @@
         ***************/
 
         var promiseData = {
-                promise: null,
-                resolver: null,
-                rejecter: null
+                'promise': null,
+                'resolver': null,
+                'rejecter': null
             };
 
         /* If this call was made via the utility function (which is the default method of invocation when jQuery/Zepto are not being used), and if
@@ -2173,10 +2166,10 @@
         /* Note: Velocity employs a call-based queueing architecture, which means that stopping an animating element actually stops the full call that
            triggered it -- not that one element exclusively. Similarly, there is one promise per call, and all elements targeted by a Velocity call are
            grouped together for the purposes of resolving and rejecting a promise. */
-        if (isUtility && Velocity['Promise']) {
-            promiseData.promise = new Velocity['Promise'](function (resolve, reject) {
-                promiseData.resolver = resolve;
-                promiseData.rejecter = reject;
+        if (Velocity['Promise']) {
+            promiseData['promise'] = new Velocity['Promise'](function (resolve, reject) {
+                promiseData['resolver'] = resolve;
+                promiseData['rejecter'] = reject;
             });
         }
 
@@ -2207,16 +2200,16 @@
 
                 /* Clear the currently-active delay on each targeted element. */
                 $['each'](elements, function(i, element) {
-                    if (Data(element) && Data(element).delayTimer) {
+                    if (Data(element) && Data(element)['delayTimer']) {
                         /* Stop the timer from triggering its cached next() function. */
-                        clearTimeout(Data(element).delayTimer.setTimeout);
+                        clearTimeout(Data(element)['delayTimer']['setTimeout']);
 
                         /* Manually call the next() function so that the subsequent queue items can progress. */
-                        if (Data(element).delayTimer.next) {
-                            Data(element).delayTimer.next();
+                        if (Data(element)['delayTimer']['next']) {
+                            Data(element)['delayTimer']['next']();
                         }
 
-                        delete Data(element).delayTimer;
+                        delete Data(element)['delayTimer'];
                     }
 
                     /* If we want to finish everything in the queue, we have to iterate through it
@@ -2261,7 +2254,7 @@
                                - options === "custom" --> stop current queue:"custom" call, including remaining queued ones (there is no functionality to only clear the currently-running queue:"custom" call). */
                             var queueName = (options === undefined) ? "" : options;
 
-                            if (queueName !== true && (activeCall[2].queue !== queueName) && !(options === undefined && activeCall[2].queue === false)) {
+                            if (queueName !== true && (activeCall[2]['queue'] !== queueName) && !(options === undefined && activeCall[2]['queue'] === false)) {
                                 return true;
                             }
 
@@ -2291,9 +2284,9 @@
                                            changed to reflect the final value that the elements were actually tweened to. */
                                         /* Note: If only queue:false animations are currently running on an element, it won't have a tweensContainer
                                            object. Also, queue:false animations can't be reversed. */
-                                        if (Data(element) && Data(element).tweensContainer && queueName !== false) {
-                                            $['each'](Data(element).tweensContainer, function(m, activeTween) {
-                                                activeTween.endValue = activeTween.currentValue;
+                                        if (Data(element) && Data(element)['tweensContainer'] && queueName !== false) {
+                                            $['each'](Data(element)['tweensContainer'], function(m, activeTween) {
+                                                activeTween['endValue'] = activeTween['currentValue'];
                                             });
                                         }
 
@@ -2301,7 +2294,7 @@
                                     } else if (propertiesMap === "finish" || propertiesMap === "finishAll") {
                                         /* To get active tweens to finish immediately, we forcefully shorten their durations to 1ms so that
                                         they finish upon the next rAf tick then proceed with normal call completion logic. */
-                                        activeCall[2].duration = 1;
+                                        activeCall[2]['duration'] = 1;
                                     }
                                 }
                             });
@@ -2316,9 +2309,9 @@
                         completeCall(j, true);
                     });
 
-                    if (promiseData.promise) {
+                    if (promiseData['promise']) {
                         /* Immediately resolve the promise associated with this stop call since stop runs synchronously. */
-                        promiseData.resolver(elements);
+                        promiseData['resolver'](elements);
                     }
                 }
 
@@ -2337,38 +2330,38 @@
                 /* Check if a string matches a registered redirect (see Redirects above). */
                 } else if (isString(propertiesMap) && Velocity['Redirects'][propertiesMap]) {
                     var opts = $['extend']({}, options),
-                        durationOriginal = opts.duration,
-                        delayOriginal = opts.delay || 0;
+                        durationOriginal = opts['duration'],
+                        delayOriginal = opts['delay'] || 0;
 
                     /* If the backwards option was passed in, reverse the element set so that elements animate from the last to the first. */
-                    if (opts.backwards === true) {
+                    if (opts['backwards'] === true) {
                         elements = $['extend'](true, [], elements).reverse();
                     }
 
                     /* Individually trigger the redirect for each element in the set to prevent users from having to handle iteration logic in their redirect. */
                     $['each'](elements, function(elementIndex, element) {
                         /* If the stagger option was passed in, successively delay each element by the stagger value (in ms). Retain the original delay value. */
-                        if (parseFloat(opts.stagger)) {
-                            opts.delay = delayOriginal + (parseFloat(opts.stagger) * elementIndex);
-                        } else if (isFunc(opts.stagger)) {
-                            opts.delay = delayOriginal + opts.stagger.call(element, elementIndex, elementsLength);
+                        if (parseFloat(opts['stagger'])) {
+                            opts['delay'] = delayOriginal + (parseFloat(opts['stagger']) * elementIndex);
+                        } else if (isFunc(opts['stagger'])) {
+                            opts['delay'] = delayOriginal + opts['stagger'].call(element, elementIndex, elementsLength);
                         }
 
-                        /* If the drag option was passed in, successively increase/decrease (depending on the presense of opts.backwards)
+                        /* If the drag option was passed in, successively increase/decrease (depending on the presense of opts['backwards'])
                            the duration of each element's animation, using floors to prevent producing very short durations. */
-                        if (opts.drag) {
+                        if (opts['drag']) {
                             /* Default the duration of UI pack effects (callouts and transitions) to 1000ms instead of the usual default duration of 400ms. */
-                            opts.duration = parseFloat(durationOriginal) || (/^(callout|transition)/.test(propertiesMap) ? 1000 : DURATION_DEFAULT);
+                            opts['duration'] = parseFloat(durationOriginal) || (/^(callout|transition)/.test(propertiesMap) ? 1000 : DURATION_DEFAULT);
 
                             /* For each element, take the greater duration of: A) animation completion percentage relative to the original duration,
                                B) 75% of the original duration, or C) a 200ms fallback (in case duration is already set to a low value).
                                The end result is a baseline of 75% of the redirect's duration that increases/decreases as the end of the element set is approached. */
-                            opts.duration = Math.max(opts.duration * (opts.backwards ? 1 - elementIndex/elementsLength : (elementIndex + 1) / elementsLength), opts.duration * 0.75, 200);
+                            opts['duration'] = Math.max(opts['duration'] * (opts['backwards'] ? 1 - elementIndex/elementsLength : (elementIndex + 1) / elementsLength), opts['duration'] * 0.75, 200);
                         }
 
                         /* Pass in the call's opts object so that the redirect can optionally extend it. It defaults to an empty object instead of null to
                            reduce the opts checking logic required inside the redirect. */
-                        Velocity['Redirects'][propertiesMap].call(element, element, opts || {}, elementIndex, elementsLength, elements, promiseData.promise ? promiseData : undefined);
+                        Velocity['Redirects'][propertiesMap].call(element, element, opts || {}, elementIndex, elementsLength, elements, promiseData['promise'] ? promiseData : undefined);
                     });
 
                     /* Since the animation logic resides within the redirect's own code, abort the remainder of this call.
@@ -2378,8 +2371,8 @@
                 } else {
                     var abortError = "Velocity: First argument (" + propertiesMap + ") was not a property map, a known action, or a registered redirect. Aborting.";
 
-                    if (promiseData.promise) {
-                        promiseData.rejecter(new Error(abortError));
+                    if (promiseData['promise']) {
+                        promiseData['rejecter'](new Error(abortError));
                     } else {
                         console.log(abortError);
                     }
@@ -2397,15 +2390,15 @@
            avoided (via caching) wherever possible. This container is call-wide instead of page-wide to avoid the risk of using stale
            conversion metrics across Velocity animations that are not immediately consecutively chained. */
         var callUnitConversionData = {
-                lastParent: null,
-                lastPosition: null,
-                lastFontSize: null,
-                lastPercentToPxWidth: null,
-                lastPercentToPxHeight: null,
-                lastEmToPx: null,
-                remToPx: null,
-                vwToPx: null,
-                vhToPx: null
+                'lastParent': null,
+                'lastPosition': null,
+                'lastFontSize': null,
+                'lastPercentToPxWidth': null,
+                'lastPercentToPxHeight': null,
+                'lastEmToPx': null,
+                'remToPx': null,
+                'vwToPx': null,
+                'vhToPx': null
             };
 
         /* A container for all the ensuing tween data and metadata associated with this call. This container gets pushed to the page-wide
@@ -2432,13 +2425,13 @@
                Element-Wide Variables
             ***************************/
 
-            var element = this,
-                /* The runtime opts object is the extension of the current call's options and Velocity's page-wide option defaults. */
-                opts = $['extend']({}, Velocity['defaults'], options),
-                /* A container for the processed data associated with each property in the propertyMap.
-                   (Each property in the map produces its own "tween".) */
-                tweensContainer = {},
-                elementUnitConversionData;
+            var element = this;
+            /* The runtime opts object is the extension of the current call's options and Velocity's page-wide option defaults. */
+            var opts = $['extend']({}, Velocity['defaults'], options);
+            /* A container for the processed data associated with each property in the propertyMap.
+               (Each property in the map produces its own "tween".) */
+            var tweensContainer = {};
+            var elementUnitConversionData;
 
             /******************
                Element Init
@@ -2455,16 +2448,16 @@
             /* Since queue:false doesn't respect the item's existing queue, we avoid injecting its delay here (it's set later on). */
             /* Note: Velocity rolls its own delay function since jQuery doesn't have a utility alias for $['fn'].delay()
                (and thus requires jQuery element creation, which we avoid since its overhead includes DOM querying). */
-            if (parseFloat(opts.delay) && opts.queue !== false) {
-                $['queue'](element, opts.queue, function(next) {
+            if (parseFloat(opts['delay']) && opts['queue'] !== false) {
+                $['queue'](element, opts['queue'], function(next) {
                     /* This is a flag used to indicate to the upcoming completeCall() function that this queue entry was initiated by Velocity. See completeCall() for further details. */
                     Velocity['velocityQueueEntryFlag'] = true;
 
                     /* The ensuing queue item (which is assigned to the "next" argument that $['queue']() automatically passes in) will be triggered after a setTimeout delay.
                        The setTimeout is stored so that it can be subjected to clearTimeout() if this animation is prematurely stopped via Velocity's "stop" command. */
-                    Data(element).delayTimer = {
-                        setTimeout: setTimeout(next, parseFloat(opts.delay)),
-                        next: next
+                    Data(element)['delayTimer'] = {
+                        'setTimeout': setTimeout(next, parseFloat(opts['delay'])),
+                        'next': next
                     };
                 });
             }
@@ -2474,22 +2467,22 @@
             *********************/
 
             /* Support for jQuery's named durations. */
-            switch (opts.duration.toString().toLowerCase()) {
+            switch (opts['duration'].toString().toLowerCase()) {
                 case "fast":
-                    opts.duration = 200;
+                    opts['duration'] = 200;
                     break;
 
                 case "normal":
-                    opts.duration = DURATION_DEFAULT;
+                    opts['duration'] = DURATION_DEFAULT;
                     break;
 
                 case "slow":
-                    opts.duration = 600;
+                    opts['duration'] = 600;
                     break;
 
                 default:
                     /* Remove the potential "ms" suffix and default to 1 if the user is attempting to set a duration of 0 (in order to produce an immediate style change). */
-                    opts.duration = parseFloat(opts.duration) || 1;
+                    opts['duration'] = parseFloat(opts['duration']) || 1;
             }
 
             /************************
@@ -2500,10 +2493,10 @@
                 /* In mock mode, all animations are forced to 1ms so that they occur immediately upon the next rAF tick.
                    Alternatively, a multiplier can be passed in to time remap all delays and durations. */
                 if (Velocity['mock'] === true) {
-                    opts.duration = opts.delay = 1;
+                    opts['duration'] = opts['delay'] = 1;
                 } else {
-                    opts.duration *= parseFloat(Velocity['mock']) || 1;
-                    opts.delay *= parseFloat(Velocity['mock']) || 1;
+                    opts['duration'] *= parseFloat(Velocity['mock']) || 1;
+                    opts['delay'] *= parseFloat(Velocity['mock']) || 1;
                 }
             }
 
@@ -2511,23 +2504,23 @@
                Option: Easing
             *******************/
 
-            opts.easing = getEasing(opts.easing, opts.duration);
+            opts['easing'] = getEasing(opts['easing'], opts['duration']);
 
             /**********************
                Option: Callbacks
             **********************/
 
             /* Callbacks must functions. Otherwise, default to null. */
-            if (opts.begin && !isFunc(opts.begin)) {
-                opts.begin = null;
+            if (opts['begin'] && !isFunc(opts['begin'])) {
+                opts['begin'] = null;
             }
 
-            if (opts.progress && !isFunc(opts.progress)) {
-                opts.progress = null;
+            if (opts['progress'] && !isFunc(opts['progress'])) {
+                opts['progress'] = null;
             }
 
-            if (opts.complete && !isFunc(opts.complete)) {
-                opts.complete = null;
+            if (opts['complete'] && !isFunc(opts['complete'])) {
+                opts['complete'] = null;
             }
 
             /*********************************
@@ -2536,17 +2529,17 @@
 
             /* Refer to Velocity's documentation (VelocityJS.org/#displayAndVisibility) for a description of the display and visibility options' behavior. */
             /* Note: We strictly check for undefined instead of falsiness because display accepts an empty string value. */
-            if (opts.display !== undefined && opts.display !== null) {
-                opts.display = opts.display.toString().toLowerCase();
+            if (opts['display'] !== undefined && opts['display'] !== null) {
+                opts['display'] = opts['display'].toString().toLowerCase();
 
                 /* Users can pass in a special "auto" value to instruct Velocity to set the element to its default display value. */
-                if (opts.display === "auto") {
-                    opts.display = Velocity['CSS']['Values']['getDisplayType'](element);
+                if (opts['display'] === "auto") {
+                    opts['display'] = Velocity['CSS']['Values']['getDisplayType'](element);
                 }
             }
 
-            if (opts.visibility !== undefined && opts.visibility !== null) {
-                opts.visibility = opts.visibility.toString().toLowerCase();
+            if (opts['visibility'] !== undefined && opts['visibility'] !== null) {
+                opts['visibility'] = opts['visibility'].toString().toLowerCase();
             }
 
             /**********************
@@ -2557,7 +2550,7 @@
                on animating elements. HA is removed from the element at the completion of its animation. */
             /* Note: Android Gingerbread doesn't support HA. If a null transform hack (mobileHA) is in fact set, it will prevent other tranform subproperties from taking effect. */
             /* Note: You can read more about the use of mobileHA in Velocity's documentation: VelocityJS.org/#mobileHA. */
-            opts.mobileHA = (opts.mobileHA && Velocity['State']['isMobile'] && !Velocity['State']['isGingerbread']);
+            opts['mobileHA'] = (opts['mobileHA'] && Velocity['State']['isMobile'] && !Velocity['State']['isGingerbread']);
 
             /***********************
                Part II: Queueing
@@ -2574,10 +2567,10 @@
                 *******************/
 
                 /* The begin callback is fired once per call -- not once per elemenet -- and is passed the full raw DOM element set as both its context and its first argument. */
-                if (opts.begin && elementsIndex === 0) {
+                if (opts['begin'] && elementsIndex === 0) {
                     /* We throw callbacks in a setTimeout so that thrown errors don't halt the execution of Velocity itself. */
                     try {
-                        opts.begin.call(elements, elements);
+                        opts['begin'].call(elements, elements);
                     } catch (error) {
                         setTimeout(function() { throw error; }, 1);
                     }
@@ -2590,30 +2583,30 @@
                 /* Note: In order to be subjected to chaining and animation options, scroll's tweening is routed through Velocity as if it were a standard CSS property animation. */
                 if (action === "scroll") {
                     /* The scroll action uniquely takes an optional "offset" option -- specified in pixels -- that offsets the targeted scroll position. */
-                    var scrollDirection = (/^x$/i.test(opts.axis) ? "Left" : "Top"),
-                        scrollOffset = parseFloat(opts.offset) || 0,
+                    var scrollDirection = (/^x$/i.test(opts['axis']) ? "Left" : "Top"),
+                        scrollOffset = parseFloat(opts['offset']) || 0,
                         scrollPositionCurrent,
                         scrollPositionCurrentAlternate,
                         scrollPositionEnd;
 
                     /* Scroll also uniquely takes an optional "container" option, which indicates the parent element that should be scrolled --
                        as opposed to the browser window itself. This is useful for scrolling toward an element that's inside an overflowing parent element. */
-                    if (opts.container) {
+                    if (opts['container']) {
                         /* Ensure that either a jQuery object or a raw DOM element was passed in. */
-                        if ( isNode(opts.container) ) {
+                        if ( isNode(opts['container']) ) {
                             /* Extract the raw DOM element from the jQuery wrapper. */
-                            opts.container = opts.container[0] || opts.container;
+                            opts['container'] = opts['container'][0] || opts['container'];
                             /* Note: Unlike other properties in Velocity, the browser's scroll position is never cached since it so frequently changes
                                (due to the user's natural interaction with the page). */
-                            scrollPositionCurrent = opts.container["scroll" + scrollDirection]; /* GET */
+                            scrollPositionCurrent = opts['container']["scroll" + scrollDirection]; /* GET */
 
                             /* $['position']() values are relative to the container's currently viewable area (without taking into account the container's true dimensions
                                -- say, for example, if the container was not overflowing). Thus, the scroll end value is the sum of the child element's position *and*
                                the scroll container's current scroll position. */
-                            scrollPositionEnd = (scrollPositionCurrent + $(element).position()[scrollDirection.toLowerCase()]) + scrollOffset; /* GET */
+                            scrollPositionEnd = (scrollPositionCurrent + $(element)['position']()[scrollDirection.toLowerCase()]) + scrollOffset; /* GET */
                         /* If a value other than a jQuery object or a raw DOM element was passed in, default to null so that this option is ignored. */
                         } else {
-                            opts.container = null;
+                            opts['container'] = null;
                         }
                     } else {
                         /* If the window itself is being scrolled -- not a containing element -- perform a live scroll position lookup using
@@ -2624,28 +2617,28 @@
 
                         /* Unlike $['position'](), $['offset']() values are relative to the browser window's true dimensions -- not merely its currently viewable area --
                            and therefore end values do not need to be compounded onto current values. */
-                        scrollPositionEnd = $(element).offset()[scrollDirection.toLowerCase()] + scrollOffset; /* GET */
+                        scrollPositionEnd = $(element)['offset']()[scrollDirection.toLowerCase()] + scrollOffset; /* GET */
                     }
 
                     /* Since there's only one format that scroll's associated tweensContainer can take, we create it manually. */
                     tweensContainer = {
-                        scroll: {
-                            rootPropertyValue: false,
-                            startValue: scrollPositionCurrent,
-                            currentValue: scrollPositionCurrent,
-                            endValue: scrollPositionEnd,
-                            unitType: "",
-                            easing: opts.easing,
-                            scrollData: {
-                                container: opts.container,
-                                direction: scrollDirection,
-                                alternateValue: scrollPositionCurrentAlternate
+                        'scroll': {
+                            'rootPropertyValue': false,
+                            'startValue': scrollPositionCurrent,
+                            'currentValue': scrollPositionCurrent,
+                            'endValue': scrollPositionEnd,
+                            'unitType': "",
+                            'easing': opts['easing'],
+                            'scrollData': {
+                                'container': opts['container'],
+                                'direction': scrollDirection,
+                                'alternateValue': scrollPositionCurrentAlternate
                             }
                         },
-                        element: element
+                        'element': element
                     };
 
-                    if (Velocity['debug']) console.log("tweensContainer (scroll): ", tweensContainer.scroll, element);
+                    if (Velocity['debug']) console.log("tweensContainer (scroll): ", tweensContainer['scroll'], element);
 
                 /******************************************
                    Tween Data Construction (for Reverse)
@@ -2660,9 +2653,9 @@
                    as reverting to the element's values as they were prior to the previous *Velocity* call. */
                 } else if (action === "reverse") {
                     /* Abort if there is no prior animation data to reverse to. */
-                    if (!Data(element).tweensContainer) {
+                    if (!Data(element)['tweensContainer']) {
                         /* Dequeue the element so that this queue entry releases itself immediately, allowing subsequent queue entries to run. */
-                        $['dequeue'](element, opts.queue);
+                        $['dequeue'](element, opts['queue']);
 
                         return;
                     } else {
@@ -2672,28 +2665,28 @@
 
                         /* If the element was hidden via the display option in the previous call,
                            revert display to "auto" prior to reversal so that the element is visible again. */
-                        if (Data(element).opts.display === "none") {
-                            Data(element).opts.display = "auto";
+                        if (Data(element).opts['display'] === "none") {
+                            Data(element).opts['display'] = "auto";
                         }
 
-                        if (Data(element).opts.visibility === "hidden") {
-                            Data(element).opts.visibility = "visible";
+                        if (Data(element).opts['visibility'] === "hidden") {
+                            Data(element).opts['visibility'] = "visible";
                         }
 
                         /* If the loop option was set in the previous call, disable it so that "reverse" calls aren't recursively generated.
                            Further, remove the previous call's callback options; typically, users do not want these to be refired. */
-                        Data(element).opts.loop = false;
-                        Data(element).opts.begin = null;
-                        Data(element).opts.complete = null;
+                        Data(element).opts['loop'] = false;
+                        Data(element).opts['begin'] = null;
+                        Data(element).opts['complete'] = null;
 
                         /* Since we're extending an opts object that has already been extended with the defaults options object,
                            we remove non-explicitly-defined properties that are auto-assigned values. */
-                        if (!options.easing) {
-                            delete opts.easing;
+                        if (!options['easing']) {
+                            delete opts['easing'];
                         }
 
-                        if (!options.duration) {
-                            delete opts.duration;
+                        if (!options['duration']) {
+                            delete opts['duration'];
                         }
 
                         /* The opts object used for reversal is an extension of the options object optionally passed into this
@@ -2705,22 +2698,22 @@
                         *************************************/
 
                         /* Create a deepy copy (indicated via the true flag) of the previous call's tweensContainer. */
-                        var lastTweensContainer = $['extend'](true, {}, Data(element).tweensContainer);
+                        var lastTweensContainer = $['extend'](true, {}, Data(element)['tweensContainer']);
 
                         /* Manipulate the previous tweensContainer by replacing its end values and currentValues with its start values. */
                         for (var lastTween in lastTweensContainer) {
                             /* In addition to tween data, tweensContainers contain an element property that we ignore here. */
                             if (lastTween !== "element") {
-                                var lastStartValue = lastTweensContainer[lastTween].startValue;
+                                var lastStartValue = lastTweensContainer[lastTween]['startValue'];
 
-                                lastTweensContainer[lastTween].startValue = lastTweensContainer[lastTween].currentValue = lastTweensContainer[lastTween].endValue;
-                                lastTweensContainer[lastTween].endValue = lastStartValue;
+                                lastTweensContainer[lastTween]['startValue'] = lastTweensContainer[lastTween]['currentValue'] = lastTweensContainer[lastTween]['endValue'];
+                                lastTweensContainer[lastTween]['endValue'] = lastStartValue;
 
                                 /* Easing is the only option that embeds into the individual tween data (since it can be defined on a per-property basis).
                                    Accordingly, every property's easing value must be updated when an options object is passed in with a reverse call.
                                    The side effect of this extensibility is that all per-property easing values are forcefully reset to the new value. */
                                 if (!isEmptyObj(options)) {
-                                    lastTweensContainer[lastTween].easing = opts.easing;
+                                    lastTweensContainer[lastTween]['easing'] = opts['easing'];
                                 }
 
                                 if (Velocity['debug']) console.log("reverse tweensContainer (" + lastTween + "): " + JSON.stringify(lastTweensContainer[lastTween]), element);
@@ -2752,8 +2745,8 @@
                     /* The per-element isAnimating flag is used to indicate whether it's safe (i.e. the data isn't stale)
                        to transfer over end values to use as start values. If it's set to true and there is a previous
                        Velocity call to pull values from, do so. */
-                    if (Data(element).tweensContainer && Data(element).isAnimating === true) {
-                        lastTweensContainer = Data(element).tweensContainer;
+                    if (Data(element)['tweensContainer'] && Data(element)['isAnimating'] === true) {
+                        lastTweensContainer = Data(element)['tweensContainer'];
                     }
 
                     /***************************
@@ -2779,11 +2772,11 @@
 
                             /* Two-item array format: If the second item is a number, function, or hex string, treat it as a
                                start value since easings can only be non-hex strings or arrays. */
-                            if ((!isArray(valueData[1]) && /^[\d-]/.test(valueData[1])) || isFunc(valueData[1]) || CSS.RegEx.isHex.test(valueData[1])) {
+                            if ((!isArray(valueData[1]) && /^[\d-]/.test(valueData[1])) || isFunc(valueData[1]) || CSS['RegEx']['isHex'].test(valueData[1])) {
                                 startValue = valueData[1];
                             /* Two or three-item array: If the second item is a non-hex string or an array, treat it as an easing. */
-                            } else if ((isString(valueData[1]) && !CSS.RegEx.isHex.test(valueData[1])) || isArray(valueData[1])) {
-                                easing = skipResolvingEasing ? valueData[1] : getEasing(valueData[1], opts.duration);
+                            } else if ((isString(valueData[1]) && !CSS['RegEx']['isHex'].test(valueData[1])) || isArray(valueData[1])) {
+                                easing = skipResolvingEasing ? valueData[1] : getEasing(valueData[1], opts['duration']);
 
                                 /* Don't bother validating startValue's value now since the ensuing property cycling logic inherently does that. */
                                 if (valueData[2] !== undefined) {
@@ -2797,7 +2790,7 @@
 
                         /* Default to the call's easing if a per-property easing type was not defined. */
                         if (!skipResolvingEasing) {
-                            easing = easing || opts.easing;
+                            easing = easing || opts['easing'];
                         }
 
                         /* If functions were passed in as values, pass the function the current element as its context,
@@ -2818,18 +2811,18 @@
                        colorRed, colorGreen, and colorBlue RGB component tweens into the propertiesMap (which Velocity understands) and remove the shorthand property. */
                     $['each'](propertiesMap, function(property, value) {
                         /* Find shorthand color properties that have been passed a hex string. */
-                        if (RegExp("^" + CSS.Lists.colors.join("$|^") + "$").test(property)) {
+                        if (RegExp("^" + CSS['Lists']['colors'].join("$|^") + "$").test(property)) {
                             /* Parse the value data for each shorthand. */
                             var valueData = parsePropertyValue(value, true),
                                 endValue = valueData[0],
                                 easing = valueData[1],
                                 startValue = valueData[2];
 
-                            if (CSS.RegEx.isHex.test(endValue)) {
+                            if (CSS['RegEx']['isHex'].test(endValue)) {
                                 /* Convert the hex strings into their RGB component arrays. */
                                 var colorComponents = [ "Red", "Green", "Blue" ],
-                                    endValueRGB = CSS.Values.hexToRgb(endValue),
-                                    startValueRGB = startValue ? CSS.Values.hexToRgb(startValue) : undefined;
+                                    endValueRGB = CSS['Values']['hexToRgb'](endValue),
+                                    startValueRGB = startValue ? CSS['Values']['hexToRgb'](startValue) : undefined;
 
                                 /* Inject the RGB component tweens into propertiesMap. */
                                 for (var i = 0; i < colorComponents.length; i++) {
@@ -2867,10 +2860,10 @@
 
                         /* Now that the original property name's format has been used for the parsePropertyValue() lookup above,
                            we force the property to its camelCase styling to normalize it for manipulation. */
-                        property = CSS.Names.camelCase(property);
+                        property = CSS['Names']['camelCase'](property);
 
                         /* In case this property is a hook, there are circumstances where we will intend to work on the hook's root property and not the hooked subproperty. */
-                        var rootProperty = CSS.Hooks.getRoot(property),
+                        var rootProperty = CSS['Hooks']['getRoot'](property),
                             rootPropertyValue = false;
 
                         /* Other than for the dummy tween property, properties that are not supported by the browser (and do not have an associated normalization) will
@@ -2878,7 +2871,7 @@
                            Property support is determined via prefixCheck(), which returns a false flag when no supported is detected. */
                         /* Note: Since SVG elements have some of their properties directly applied as HTML attributes,
                            there is no way to check for their explicit browser support, and so we skip skip this check for them. */
-                        if (!Data(element).isSVG && rootProperty !== "tween" && CSS.Names.prefixCheck(rootProperty)[1] === false && CSS.Normalizations.registered[rootProperty] === undefined) {
+                        if (!Data(element)['isSVG'] && rootProperty !== "tween" && CSS['Names']['prefixCheck'](rootProperty)[1] === false && CSS['Normalizations']['registered'][rootProperty] === undefined) {
                             if (Velocity['debug']) console.log("Skipping [" + rootProperty + "] due to a lack of browser support.");
 
                             continue;
@@ -2887,42 +2880,42 @@
                         /* If the display option is being set to a non-"none" (e.g. "block") and opacity (filter on IE<=8) is being
                            animated to an endValue of non-zero, the user's intention is to fade in from invisible, thus we forcefeed opacity
                            a startValue of 0 if its startValue hasn't already been sourced by value transferring or prior forcefeeding. */
-                        if (((opts.display !== undefined && opts.display !== null && opts.display !== "none") || (opts.visibility !== undefined && opts.visibility !== "hidden")) && /opacity|filter/.test(property) && !startValue && endValue !== 0) {
+                        if (((opts['display'] !== undefined && opts['display'] !== null && opts['display'] !== "none") || (opts['visibility'] !== undefined && opts['visibility'] !== "hidden")) && /opacity|filter/.test(property) && !startValue && endValue !== 0) {
                             startValue = 0;
                         }
 
                         /* If values have been transferred from the previous Velocity call, extract the endValue and rootPropertyValue
                            for all of the current call's properties that were *also* animated in the previous call. */
                         /* Note: Value transferring can optionally be disabled by the user via the _cacheValues option. */
-                        if (opts._cacheValues && lastTweensContainer && lastTweensContainer[property]) {
+                        if (opts['_cacheValues'] && lastTweensContainer && lastTweensContainer[property]) {
                             if (startValue === undefined) {
-                                startValue = lastTweensContainer[property].endValue + lastTweensContainer[property].unitType;
+                                startValue = lastTweensContainer[property]['endValue'] + lastTweensContainer[property]['unitType'];
                             }
 
                             /* The previous call's rootPropertyValue is extracted from the element's data cache since that's the
                                instance of rootPropertyValue that gets freshly updated by the tweening process, whereas the rootPropertyValue
                                attached to the incoming lastTweensContainer is equal to the root property's value prior to any tweening. */
-                            rootPropertyValue = Data(element).rootPropertyValueCache[rootProperty];
+                            rootPropertyValue = Data(element)['rootPropertyValueCache'][rootProperty];
                         /* If values were not transferred from a previous Velocity call, query the DOM as needed. */
                         } else {
                             /* Handle hooked properties. */
-                            if (CSS.Hooks.registered[property]) {
+                            if (CSS['Hooks']['registered'][property]) {
                                if (startValue === undefined) {
-                                    rootPropertyValue = CSS.getPropertyValue(element, rootProperty); /* GET */
+                                    rootPropertyValue = CSS['getPropertyValue'](element, rootProperty); /* GET */
                                     /* Note: The following getPropertyValue() call does not actually trigger a DOM query;
                                        getPropertyValue() will extract the hook from rootPropertyValue. */
-                                    startValue = CSS.getPropertyValue(element, property, rootPropertyValue);
+                                    startValue = CSS['getPropertyValue'](element, property, rootPropertyValue);
                                 /* If startValue is already defined via forcefeeding, do not query the DOM for the root property's value;
                                    just grab rootProperty's zero-value template from CSS.Hooks. This overwrites the element's actual
                                    root property value (if one is set), but this is acceptable since the primary reason users forcefeed is
                                    to avoid DOM queries, and thus we likewise avoid querying the DOM for the root property's value. */
                                 } else {
                                     /* Grab this hook's zero-value template, e.g. "0px 0px 0px black". */
-                                    rootPropertyValue = CSS.Hooks.templates[rootProperty][1];
+                                    rootPropertyValue = CSS['Hooks']['templates'][rootProperty][1];
                                 }
                             /* Handle non-hooked properties that haven't already been defined via forcefeeding. */
                             } else if (startValue === undefined) {
-                                startValue = CSS.getPropertyValue(element, property); /* GET */
+                                startValue = CSS['getPropertyValue'](element, property); /* GET */
                             }
                         }
 
@@ -2954,7 +2947,7 @@
 
                             /* If no unit type was supplied, assign one that is appropriate for this property (e.g. "deg" for rotateZ or "px" for width). */
                             if (!unitType) {
-                                unitType = CSS.Values.getUnitType(property);
+                                unitType = CSS['Values']['getUnitType'](property);
                             }
 
                             return [ numericValue, unitType ];
@@ -3029,19 +3022,19 @@
                                of the prior element, the prior element's conversion ratios are used. Like most optimizations in Velocity,
                                this is done to minimize DOM querying. */
                             var sameRatioIndicators = {
-                                    myParent: element.parentNode || document['body'], /* GET */
-                                    position: CSS.getPropertyValue(element, "position"), /* GET */
-                                    fontSize: CSS.getPropertyValue(element, "fontSize") /* GET */
+                                    'myParent': element['parentNode'] || document['body'], /* GET */
+                                    'position': CSS['getPropertyValue'](element, "position"), /* GET */
+                                    'fontSize': CSS['getPropertyValue'](element, "fontSize") /* GET */
                                 },
                                 /* Determine if the same % ratio can be used. % is based on the element's position value and its parent's width and height dimensions. */
-                                samePercentRatio = ((sameRatioIndicators.position === callUnitConversionData.lastPosition) && (sameRatioIndicators.myParent === callUnitConversionData.lastParent)),
+                                samePercentRatio = ((sameRatioIndicators['position'] === callUnitConversionData['lastPosition']) && (sameRatioIndicators['myParent'] === callUnitConversionData['lastParent'])),
                                 /* Determine if the same em ratio can be used. em is relative to the element's fontSize. */
-                                sameEmRatio = (sameRatioIndicators.fontSize === callUnitConversionData.lastFontSize);
+                                sameEmRatio = (sameRatioIndicators['fontSize'] === callUnitConversionData['lastFontSize']);
 
                             /* Store these ratio indicators call-wide for the next element to compare against. */
-                            callUnitConversionData.lastParent = sameRatioIndicators.myParent;
-                            callUnitConversionData.lastPosition = sameRatioIndicators.position;
-                            callUnitConversionData.lastFontSize = sameRatioIndicators.fontSize;
+                            callUnitConversionData['lastParent'] = sameRatioIndicators['myParent'];
+                            callUnitConversionData['lastPosition'] = sameRatioIndicators['position'];
+                            callUnitConversionData['lastFontSize'] = sameRatioIndicators['fontSize'];
 
                             /***************************
                                Element-Specific Units
@@ -3053,10 +3046,10 @@
                                 unitRatios = {};
 
                             if (!sameEmRatio || !samePercentRatio) {
-                                var dummy = Data(element).isSVG ? document['createElementNS']("http://www.w3.org/2000/svg", "rect") : document['createElement']("div");
+                                var dummy = Data(element)['isSVG'] ? document['createElementNS']("http://www.w3.org/2000/svg", "rect") : document['createElement']("div");
 
                                 Velocity['init'](dummy);
-                                sameRatioIndicators.myParent.appendChild(dummy);
+                                sameRatioIndicators['myParent']['appendChild'](dummy);
 
                                 /* To accurately and consistently calculate conversion ratios, the element's cascaded overflow and box-sizing are stripped.
                                    Similarly, since width/height can be artificially constrained by their min-/max- equivalents, these are controlled for as well. */
@@ -3064,8 +3057,8 @@
                                 $['each']([ "overflow", "overflowX", "overflowY" ], function(i, property) {
                                     Velocity['CSS']['setPropertyValue'](dummy, property, "hidden");
                                 });
-                                Velocity['CSS']['setPropertyValue'](dummy, "position", sameRatioIndicators.position);
-                                Velocity['CSS']['setPropertyValue'](dummy, "fontSize", sameRatioIndicators.fontSize);
+                                Velocity['CSS']['setPropertyValue'](dummy, "position", sameRatioIndicators['position']);
+                                Velocity['CSS']['setPropertyValue'](dummy, "fontSize", sameRatioIndicators['fontSize']);
                                 Velocity['CSS']['setPropertyValue'](dummy, "boxSizing", "content-box");
 
                                 /* width and height act as our proxy properties for measuring the horizontal and vertical % ratios. */
@@ -3076,15 +3069,15 @@
                                 Velocity['CSS']['setPropertyValue'](dummy, "paddingLeft", measurement + "em");
 
                                 /* Divide the returned value by the measurement to get the ratio between 1% and 1px. Default to 1 since working with 0 can produce Infinite. */
-                                unitRatios.percentToPxWidth = callUnitConversionData.lastPercentToPxWidth = (parseFloat(CSS.getPropertyValue(dummy, "width", null, true)) || 1) / measurement; /* GET */
-                                unitRatios.percentToPxHeight = callUnitConversionData.lastPercentToPxHeight = (parseFloat(CSS.getPropertyValue(dummy, "height", null, true)) || 1) / measurement; /* GET */
-                                unitRatios.emToPx = callUnitConversionData.lastEmToPx = (parseFloat(CSS.getPropertyValue(dummy, "paddingLeft")) || 1) / measurement; /* GET */
+                                unitRatios['percentToPxWidth'] = callUnitConversionData['lastPercentToPxWidth'] = (parseFloat(CSS['getPropertyValue'](dummy, "width", null, true)) || 1) / measurement; /* GET */
+                                unitRatios['percentToPxHeight'] = callUnitConversionData['lastPercentToPxHeight'] = (parseFloat(CSS['getPropertyValue'](dummy, "height", null, true)) || 1) / measurement; /* GET */
+                                unitRatios['emToPx'] = callUnitConversionData['lastEmToPx'] = (parseFloat(CSS['getPropertyValue'](dummy, "paddingLeft")) || 1) / measurement; /* GET */
 
-                                sameRatioIndicators.myParent.removeChild(dummy);
+                                sameRatioIndicators['myParent']['removeChild'](dummy);
                             } else {
-                                unitRatios.emToPx = callUnitConversionData.lastEmToPx;
-                                unitRatios.percentToPxWidth = callUnitConversionData.lastPercentToPxWidth;
-                                unitRatios.percentToPxHeight = callUnitConversionData.lastPercentToPxHeight;
+                                unitRatios['emToPx'] = callUnitConversionData['lastEmToPx'];
+                                unitRatios['percentToPxWidth'] = callUnitConversionData['lastPercentToPxWidth'];
+                                unitRatios['percentToPxHeight'] = callUnitConversionData['lastPercentToPxHeight'];
                             }
 
                             /***************************
@@ -3095,20 +3088,20 @@
                                once per call since it's exclusively dependant upon document['body']'s fontSize. If this is the first time
                                that calculateUnitRatios() is being run during this call, remToPx will still be set to its default value of null,
                                so we calculate it now. */
-                            if (callUnitConversionData.remToPx === null) {
+                            if (callUnitConversionData['remToPx'] === null) {
                                 /* Default to browsers' default fontSize of 16px in the case of 0. */
-                                callUnitConversionData.remToPx = parseFloat(CSS.getPropertyValue(document['body'], "fontSize")) || 16; /* GET */
+                                callUnitConversionData['remToPx'] = parseFloat(CSS['getPropertyValue'](document['body'], "fontSize")) || 16; /* GET */
                             }
 
                             /* Similarly, viewport units are %-relative to the window's inner dimensions. */
-                            if (callUnitConversionData.vwToPx === null) {
-                                callUnitConversionData.vwToPx = parseFloat(window['innerWidth']) / 100; /* GET */
-                                callUnitConversionData.vhToPx = parseFloat(window['innerHeight']) / 100; /* GET */
+                            if (callUnitConversionData['vwToPx'] === null) {
+                                callUnitConversionData['vwToPx'] = parseFloat(window['innerWidth']) / 100; /* GET */
+                                callUnitConversionData['vhToPx'] = parseFloat(window['innerHeight']) / 100; /* GET */
                             }
 
-                            unitRatios.remToPx = callUnitConversionData.remToPx;
-                            unitRatios.vwToPx = callUnitConversionData.vwToPx;
-                            unitRatios.vhToPx = callUnitConversionData.vhToPx;
+                            unitRatios['remToPx'] = callUnitConversionData['remToPx'];
+                            unitRatios['vwToPx'] = callUnitConversionData['vwToPx'];
+                            unitRatios['vhToPx'] = callUnitConversionData['vhToPx'];
 
                             if (Velocity['debug'] >= 1) console.log("Unit ratios: " + JSON.stringify(unitRatios), element);
 
@@ -3150,7 +3143,7 @@
                                         /* Note: translateX and translateY are the only properties that are %-relative to an element's own dimensions -- not its parent's dimensions.
                                            Velocity does not include a special conversion process to account for this behavior. Therefore, animating translateX/Y from a % value
                                            to a non-% value will produce an incorrect start value. Fortunately, this sort of cross-unit conversion is rarely done by users in practice. */
-                                        startValue *= (axis === "x" ? elementUnitConversionData.percentToPxWidth : elementUnitConversionData.percentToPxHeight);
+                                        startValue *= (axis === "x" ? elementUnitConversionData['percentToPxWidth'] : elementUnitConversionData['percentToPxHeight']);
                                         break;
 
                                     case "px":
@@ -3164,7 +3157,7 @@
                                 /* Invert the px ratios to convert into to the target unit. */
                                 switch (endValueUnitType) {
                                     case "%":
-                                        startValue *= 1 / (axis === "x" ? elementUnitConversionData.percentToPxWidth : elementUnitConversionData.percentToPxHeight);
+                                        startValue *= 1 / (axis === "x" ? elementUnitConversionData['percentToPxWidth'] : elementUnitConversionData['percentToPxHeight']);
                                         break;
 
                                     case "px":
@@ -3209,19 +3202,19 @@
 
                         /* Construct the per-property tween object, and push it to the element's tweensContainer. */
                         tweensContainer[property] = {
-                            rootPropertyValue: rootPropertyValue,
-                            startValue: startValue,
-                            currentValue: startValue,
-                            endValue: endValue,
-                            unitType: endValueUnitType,
-                            easing: easing
+                            'rootPropertyValue': rootPropertyValue,
+                            'startValue': startValue,
+                            'currentValue': startValue,
+                            'endValue': endValue,
+                            'unitType': endValueUnitType,
+                            'easing': easing
                         };
 
                         if (Velocity['debug']) console.log("tweensContainer (" + property + "): " + JSON.stringify(tweensContainer[property]), element);
                     }
 
                     /* Along with its property data, store a reference to the element itself onto tweensContainer. */
-                    tweensContainer.element = element;
+                    tweensContainer['element'] = element;
                 }
 
                 /*****************
@@ -3230,28 +3223,28 @@
 
                 /* Note: tweensContainer can be empty if all of the properties in this call's property map were skipped due to not
                    being supported by the browser. The element property is used for checking that the tweensContainer has been appended to. */
-                if (tweensContainer.element) {
+                if (tweensContainer['element']) {
                     /* Apply the "velocity-animating" indicator class. */
-                    CSS.Values.addClass(element, "velocity-animating");
+                    CSS['Values']['addClass'](element, "velocity-animating");
 
                     /* The call array houses the tweensContainers for each element being animated in the current call. */
                     call.push(tweensContainer);
 
                     /* Store the tweensContainer and options if we're working on the default effects queue, so that they can be used by the reverse command. */
-                    if (opts.queue === "") {
-                        Data(element).tweensContainer = tweensContainer;
+                    if (opts['queue'] === "") {
+                        Data(element)['tweensContainer'] = tweensContainer;
                         Data(element).opts = opts;
                     }
 
                     /* Switch on the element's animating flag. */
-                    Data(element).isAnimating = true;
+                    Data(element)['isAnimating'] = true;
 
                     /* Once the final element in this call's element set has been processed, push the call array onto
                        Velocity['State']['calls'] for the animation tick to immediately begin processing. */
                     if (elementsIndex === elementsLength - 1) {
                         /* Add the current call plus its associated metadata (the element set and the call's options) onto the global call container.
                            Anything on this call container is subjected to tick() processing. */
-                        Velocity['State']['calls']['push']([ call, elements, opts, null, promiseData.resolver ]);
+                        Velocity['State']['calls']['push']([ call, elements, opts, null, promiseData['resolver'] ]);
 
                         /* If the animation tick isn't running, start it. (Velocity shuts it off when there are no active calls to process.) */
                         if (Velocity['State']['isTicking'] === false) {
@@ -3267,23 +3260,23 @@
             }
 
             /* When the queue option is set to false, the call skips the element's queue and fires immediately. */
-            if (opts.queue === false) {
+            if (opts['queue'] === false) {
                 /* Since this buildQueue call doesn't respect the element's existing queue (which is where a delay option would have been appended),
                    we manually inject the delay property here with an explicit setTimeout. */
-                if (opts.delay) {
-                    setTimeout(buildQueue, opts.delay);
+                if (opts['delay']) {
+                    setTimeout(buildQueue, opts['delay']);
                 } else {
                     buildQueue();
                 }
             /* Otherwise, the call undergoes element queueing as normal. */
             /* Note: To interoperate with jQuery, Velocity uses jQuery's own $['queue']() stack for queuing logic. */
             } else {
-                $['queue'](element, opts.queue, function(next, clearQueue) {
+                $['queue'](element, opts['queue'], function(next, clearQueue) {
                     /* If the clearQueue flag was passed in by the stop command, resolve this call's promise. (Promises can only be resolved once,
                        so it's fine if this is repeatedly triggered for each element in the associated call.) */
                     if (clearQueue === true) {
-                        if (promiseData.promise) {
-                            promiseData.resolver(elements);
+                        if (promiseData['promise']) {
+                            promiseData['resolver'](elements);
                         }
 
                         /* Do not continue with animation queueing. */
@@ -3311,7 +3304,7 @@
                each one of the elements in the set has reached the end of its individually pre-existing queue chain. */
             /* Note: Unfortunately, most people don't fully grasp jQuery's powerful, yet quirky, $['queue']() function.
                Lean more here: http://stackoverflow.com/questions/1058158/can-somebody-explain-jquery-queue-to-me */
-            if ((opts.queue === "" || opts.queue === "fx") && $['queue'](element)[0] !== "inprogress") {
+            if ((opts['queue'] === "" || opts['queue'] === "fx") && $['queue'](element)[0] !== "inprogress") {
                 $['dequeue'](element);
             }
         }
@@ -3341,10 +3334,10 @@
         var opts = $['extend']({}, Velocity['defaults'], options),
             reverseCallsCount;
 
-        opts.loop = parseInt(opts.loop);
-        reverseCallsCount = (opts.loop * 2) - 1;
+        opts['loop'] = parseInt(opts['loop']);
+        reverseCallsCount = (opts['loop'] * 2) - 1;
 
-        if (opts.loop) {
+        if (opts['loop']) {
             /* Double the loop count to convert it into its appropriate number of "reverse" calls.
                Subtract 1 from the resulting value since the current call is included in the total alternation count. */
             for (var x = 0; x < reverseCallsCount; x++) {
@@ -3352,16 +3345,16 @@
                    isn't parsed until then as well, the current call's delay option must be explicitly passed into the reverse
                    call so that the delay logic that occurs inside *Pre-Queueing* can process it. */
                 var reverseOptions = {
-                    delay: opts.delay,
-                    progress: opts.progress
+                    'delay': opts['delay'],
+                    'progress': opts['progress']
                 };
 
                 /* If a complete callback was passed into this call, transfer it to the loop redirect's final "reverse" call
                    so that it's triggered when the entire redirect is complete (and not when the very first animation is complete). */
                 if (x === reverseCallsCount - 1) {
-                    reverseOptions.display = opts.display;
-                    reverseOptions.visibility = opts.visibility;
-                    reverseOptions.complete = opts.complete;
+                    reverseOptions['display'] = opts['display'];
+                    reverseOptions['visibility'] = opts['visibility'];
+                    reverseOptions['complete'] = opts['complete'];
                 }
 
                 animate(elements, "reverse", reverseOptions);
@@ -3472,7 +3465,7 @@
                 /* The tween's completion percentage is relative to the tween's start time, not the tween's start value
                    (which would result in unpredictable tween durations since JavaScript's timers are not particularly accurate).
                    Accordingly, we ensure that percentComplete does not exceed 1. */
-                var percentComplete = Math.min((timeCurrent - timeStart) / opts.duration, 1);
+                var percentComplete = Math.min((timeCurrent - timeStart) / opts['duration'], 1);
 
                 /**********************
                    Element Iteration
@@ -3481,7 +3474,7 @@
                 /* For every call, iterate through each of the elements in its set. */
                 for (var j = 0, callLength = call.length; j < callLength; j++) {
                     var tweensContainer = call[j],
-                        element = tweensContainer.element;
+                        element = tweensContainer['element'];
 
                     /* Check to see if this element has been deleted midway through the animation by checking for the
                        continued existence of its data cache. If it's gone, skip animating this element. */
@@ -3497,21 +3490,21 @@
 
                     /* If the display option is set to non-"none", set it upfront so that the element can become visible before tweening begins.
                        (Otherwise, display's "none" value is set in completeCall() once the animation has completed.) */
-                    if (opts.display !== undefined && opts.display !== null && opts.display !== "none") {
-                        if (opts.display === "flex") {
+                    if (opts['display'] !== undefined && opts['display'] !== null && opts['display'] !== "none") {
+                        if (opts['display'] === "flex") {
                             var flexValues = [ "-webkit-box", "-moz-box", "-ms-flexbox", "-webkit-flex" ];
 
                             $['each'](flexValues, function(i, flexValue) {
-                                CSS.setPropertyValue(element, "display", flexValue);
+                                CSS['setPropertyValue'](element, "display", flexValue);
                             });
                         }
 
-                        CSS.setPropertyValue(element, "display", opts.display);
+                        CSS['setPropertyValue'](element, "display", opts['display']);
                     }
 
                     /* Same goes with the visibility option, but its "none" equivalent is "hidden". */
-                    if (opts.visibility !== undefined && opts.visibility !== "hidden") {
-                        CSS.setPropertyValue(element, "visibility", opts.visibility);
+                    if (opts['visibility'] !== undefined && opts['visibility'] !== "hidden") {
+                        CSS['setPropertyValue'](element, "visibility", opts['visibility']);
                     }
 
                     /************************
@@ -3526,7 +3519,7 @@
                                 currentValue,
                                 /* Easing can either be a pre-genereated function or a string that references a pre-registered easing
                                    on the Velocity['Easings'] object. In either case, return the appropriate easing *function*. */
-                                easing = isString(tween.easing) ? Velocity['Easings'][tween.easing] : tween.easing;
+                                easing = isString(tween['easing']) ? Velocity['Easings'][tween['easing']] : tween['easing'];
 
                             /******************************
                                Current Value Calculation
@@ -3535,19 +3528,19 @@
                             /* If this is the last tick pass (if we've reached 100% completion for this tween),
                                ensure that currentValue is explicitly set to its target endValue so that it's not subjected to any rounding. */
                             if (percentComplete === 1) {
-                                currentValue = tween.endValue;
+                                currentValue = tween['endValue'];
                             /* Otherwise, calculate currentValue based on the current delta from startValue. */
                             } else {
-                                var tweenDelta = tween.endValue - tween.startValue;
-                                currentValue = tween.startValue + (tweenDelta * easing(percentComplete, opts, tweenDelta));
+                                var tweenDelta = tween['endValue'] - tween['startValue'];
+                                currentValue = tween['startValue'] + (tweenDelta * easing(percentComplete, opts, tweenDelta));
 
                                 /* If no value change is occurring, don't proceed with DOM updating. */
-                                if (!firstTick && (currentValue === tween.currentValue)) {
+                                if (!firstTick && (currentValue === tween['currentValue'])) {
                                     continue;
                                 }
                             }
 
-                            tween.currentValue = currentValue;
+                            tween['currentValue'] = currentValue;
 
                             /* If we're tweening a fake 'tween' property in order to log transition values, update the one-per-call variable so that
                                it can be passed into the progress callback. */
@@ -3563,12 +3556,12 @@
                                    rootPropertyValue, each subsequent update to the root property in this tick pass would reset the previous hook's
                                    updates to rootPropertyValue prior to injection. A nice performance byproduct of rootPropertyValue caching is that
                                    subsequently chained animations using the same hookRoot but a different hook can use this cached rootPropertyValue. */
-                                if (CSS.Hooks.registered[property]) {
-                                    var hookRoot = CSS.Hooks.getRoot(property),
-                                        rootPropertyValueCache = Data(element).rootPropertyValueCache[hookRoot];
+                                if (CSS['Hooks']['registered'][property]) {
+                                    var hookRoot = CSS['Hooks']['getRoot'](property),
+                                        rootPropertyValueCache = Data(element)['rootPropertyValueCache'][hookRoot];
 
                                     if (rootPropertyValueCache) {
-                                        tween.rootPropertyValue = rootPropertyValueCache;
+                                        tween['rootPropertyValue'] = rootPropertyValueCache;
                                     }
                                 }
 
@@ -3578,23 +3571,23 @@
 
                                 /* setPropertyValue() returns an array of the property name and property value post any normalization that may have been performed. */
                                 /* Note: To solve an IE<=8 positioning bug, the unit type is dropped when setting a property value of 0. */
-                                var adjustedSetData = CSS.setPropertyValue(element, /* SET */
+                                var adjustedSetData = CSS['setPropertyValue'](element, /* SET */
                                                                            property,
-                                                                           tween.currentValue + (parseFloat(currentValue) === 0 ? "" : tween.unitType),
-                                                                           tween.rootPropertyValue,
-                                                                           tween.scrollData);
+                                                                           tween['currentValue'] + (parseFloat(currentValue) === 0 ? "" : tween['unitType']),
+                                                                           tween['rootPropertyValue'],
+                                                                           tween['scrollData']);
 
                                 /*******************
                                    Hooks: Part II
                                 *******************/
 
                                 /* Now that we have the hook's updated rootPropertyValue (the post-processed value provided by adjustedSetData), cache it onto the element. */
-                                if (CSS.Hooks.registered[property]) {
+                                if (CSS['Hooks']['registered'][property]) {
                                     /* Since adjustedSetData contains normalized data ready for DOM updating, the rootPropertyValue needs to be re-extracted from its normalized form. ?? */
-                                    if (CSS.Normalizations.registered[hookRoot]) {
-                                        Data(element).rootPropertyValueCache[hookRoot] = CSS.Normalizations.registered[hookRoot]("extract", null, adjustedSetData[1]);
+                                    if (CSS['Normalizations']['registered'][hookRoot]) {
+                                        Data(element)['rootPropertyValueCache'][hookRoot] = CSS['Normalizations']['registered'][hookRoot]("extract", null, adjustedSetData[1]);
                                     } else {
-                                        Data(element).rootPropertyValueCache[hookRoot] = adjustedSetData[1];
+                                        Data(element)['rootPropertyValueCache'][hookRoot] = adjustedSetData[1];
                                     }
                                 }
 
@@ -3617,36 +3610,36 @@
 
                     /* If mobileHA is enabled, set the translate3d transform to null to force hardware acceleration.
                        It's safe to override this property since Velocity doesn't actually support its animation (hooks are used in its place). */
-                    if (opts.mobileHA) {
+                    if (opts['mobileHA']) {
                         /* Don't set the null transform hack if we've already done so. */
-                        if (Data(element).transformCache.translate3d === undefined) {
+                        if (Data(element)['transformCache']['translate3d'] === undefined) {
                             /* All entries on the transformCache object are later concatenated into a single transform string via flushTransformCache(). */
-                            Data(element).transformCache.translate3d = "(0px, 0px, 0px)";
+                            Data(element)['transformCache']['translate3d'] = "(0px, 0px, 0px)";
 
                             transformPropertyExists = true;
                         }
                     }
 
                     if (transformPropertyExists) {
-                        CSS.flushTransformCache(element);
+                        CSS['flushTransformCache'](element);
                     }
                 }
 
                 /* The non-"none" display value is only applied to an element once -- when its associated call is first ticked through.
                    Accordingly, it's set to false so that it isn't re-processed by this call in the next tick. */
-                if (opts.display !== undefined && opts.display !== "none") {
-                    Velocity['State']['calls'][i][2].display = false;
+                if (opts['display'] !== undefined && opts['display'] !== "none") {
+                    Velocity['State']['calls'][i][2]['display'] = false;
                 }
-                if (opts.visibility !== undefined && opts.visibility !== "hidden") {
-                    Velocity['State']['calls'][i][2].visibility = false;
+                if (opts['visibility'] !== undefined && opts['visibility'] !== "hidden") {
+                    Velocity['State']['calls'][i][2]['visibility'] = false;
                 }
 
                 /* Pass the elements and the timing data (percentComplete, msRemaining, timeStart, tweenDummyValue) into the progress callback. */
-                if (opts.progress) {
-                    opts.progress.call(callContainer[1],
+                if (opts['progress']) {
+                    opts['progress'].call(callContainer[1],
                                        callContainer[1],
                                        percentComplete,
-                                       Math.max(0, (timeStart + opts.duration) - timeCurrent),
+                                       Math.max(0, (timeStart + opts['duration']) - timeCurrent),
                                        timeStart,
                                        tweenDummyValue);
                 }
@@ -3688,18 +3681,18 @@
         *************************/
 
         for (var i = 0, callLength = call.length; i < callLength; i++) {
-            var element = call[i].element;
+            var element = call[i]['element'];
 
             /* If the user set display to "none" (intending to hide the element), set it now that the animation has completed. */
             /* Note: display:none isn't set when calls are manually stopped (via Velocity("stop"). */
             /* Note: Display gets ignored with "reverse" calls and infinite loops, since this behavior would be undesirable. */
-            if (!isStopped && !opts.loop) {
-                if (opts.display === "none") {
-                    CSS.setPropertyValue(element, "display", opts.display);
+            if (!isStopped && !opts['loop']) {
+                if (opts['display'] === "none") {
+                    CSS['setPropertyValue'](element, "display", opts['display']);
                 }
 
-                if (opts.visibility === "hidden") {
-                    CSS.setPropertyValue(element, "visibility", opts.visibility);
+                if (opts['visibility'] === "hidden") {
+                    CSS['setPropertyValue'](element, "visibility", opts['visibility']);
                 }
             }
 
@@ -3708,39 +3701,39 @@
                an element's CSS values and thereby cause Velocity's cached value data to go stale. To detect if a queue entry was initiated by Velocity,
                we check for the existence of our special Velocity['queueEntryFlag'] declaration, which minifiers won't rename since the flag
                is assigned to jQuery's global $ object and thus exists out of Velocity's own scope. */
-            if (opts.loop !== true && ($['queue'](element)[1] === undefined || !/\.velocityQueueEntryFlag/i.test($['queue'](element)[1]))) {
+            if (opts['loop'] !== true && ($['queue'](element)[1] === undefined || !/\.velocityQueueEntryFlag/i.test($['queue'](element)[1]))) {
                 /* The element may have been deleted. Ensure that its data cache still exists before acting on it. */
                 if (Data(element)) {
-                    Data(element).isAnimating = false;
+                    Data(element)['isAnimating'] = false;
                     /* Clear the element's rootPropertyValueCache, which will become stale. */
-                    Data(element).rootPropertyValueCache = {};
+                    Data(element)['rootPropertyValueCache'] = {};
 
                     var transformHAPropertyExists = false;
                     /* If any 3D transform subproperty is at its default value (regardless of unit type), remove it. */
-                    $['each'](CSS.Lists.transforms3D, function(i, transformName) {
+                    $['each'](CSS['Lists']['transforms3D'], function(i, transformName) {
                         var defaultValue = /^scale/.test(transformName) ? 1 : 0,
-                            currentValue = Data(element).transformCache[transformName];
+                            currentValue = Data(element)['transformCache'][transformName];
 
-                        if (Data(element).transformCache[transformName] !== undefined && new RegExp("^\\(" + defaultValue + "[^.]").test(currentValue)) {
+                        if (Data(element)['transformCache'][transformName] !== undefined && new RegExp("^\\(" + defaultValue + "[^.]").test(currentValue)) {
                             transformHAPropertyExists = true;
 
-                            delete Data(element).transformCache[transformName];
+                            delete Data(element)['transformCache'][transformName];
                         }
                     });
 
                     /* Mobile devices have hardware acceleration removed at the end of the animation in order to avoid hogging the GPU's memory. */
-                    if (opts.mobileHA) {
+                    if (opts['mobileHA']) {
                         transformHAPropertyExists = true;
-                        delete Data(element).transformCache.translate3d;
+                        delete Data(element)['transformCache']['translate3d'];
                     }
 
                     /* Flush the subproperty removals to the DOM. */
                     if (transformHAPropertyExists) {
-                        CSS.flushTransformCache(element);
+                        CSS['flushTransformCache'](element);
                     }
 
                     /* Remove the "velocity-animating" indicator class. */
-                    CSS.Values.removeClass(element, "velocity-animating");
+                    CSS['Values']['removeClass'](element, "velocity-animating");
                 }
             }
 
@@ -3750,10 +3743,10 @@
 
             /* Complete is fired once per call (not once per element) and is passed the full raw DOM element set as both its context and its first argument. */
             /* Note: Callbacks aren't fired when calls are manually stopped (via Velocity("stop"). */
-            if (!isStopped && opts.complete && !opts.loop && (i === callLength - 1)) {
+            if (!isStopped && opts['complete'] && !opts['loop'] && (i === callLength - 1)) {
                 /* We throw callbacks in a setTimeout so that thrown errors don't halt the execution of Velocity itself. */
                 try {
-                    opts.complete.call(elements, elements);
+                    opts['complete'].call(elements, elements);
                 } catch (error) {
                     setTimeout(function() { throw error; }, 1);
                 }
@@ -3764,7 +3757,7 @@
             **********************/
 
             /* Note: Infinite loops don't return promises. */
-            if (resolver && opts.loop !== true) {
+            if (resolver && opts['loop'] !== true) {
                 resolver(elements);
             }
 
@@ -3772,22 +3765,22 @@
                Option: Loop (Infinite)
             ****************************/
 
-            if (Data(element) && opts.loop === true && !isStopped) {
+            if (Data(element) && opts['loop'] === true && !isStopped) {
                 /* If a rotateX/Y/Z property is being animated to 360 deg with loop:true, swap tween start/end values to enable
                    continuous iterative rotation looping. (Otherise, the element would just rotate back and forth.) */
-                $['each'](Data(element).tweensContainer, function(propertyName, tweenContainer) {
-                    if (/^rotate/.test(propertyName) && parseFloat(tweenContainer.endValue) === 360) {
-                        tweenContainer.endValue = 0;
-                        tweenContainer.startValue = 360;
+                $['each'](Data(element)['tweensContainer'], function(propertyName, tweenContainer) {
+                    if (/^rotate/.test(propertyName) && parseFloat(tweenContainer['endValue']) === 360) {
+                        tweenContainer['endValue'] = 0;
+                        tweenContainer['startValue'] = 360;
                     }
 
-                    if (/^backgroundPosition/.test(propertyName) && parseFloat(tweenContainer.endValue) === 100 && tweenContainer.unitType === "%") {
-                        tweenContainer.endValue = 0;
-                        tweenContainer.startValue = 100;
+                    if (/^backgroundPosition/.test(propertyName) && parseFloat(tweenContainer['endValue']) === 100 && tweenContainer['unitType'] === "%") {
+                        tweenContainer['endValue'] = 0;
+                        tweenContainer['startValue'] = 100;
                     }
                 });
 
-                Velocity(element, "reverse", { loop: true, delay: opts.delay });
+                Velocity(element, "reverse", { loop: true, delay: opts['delay'] });
             }
 
             /***************
@@ -3797,8 +3790,8 @@
             /* Fire the next call in the queue so long as this call's queue wasn't set to false (to trigger a parallel animation),
                which would have already caused the next call to fire. Note: Even if the end of the animation queue has been reached,
                $['dequeue']() must still be called in order to completely clear jQuery's animation queue. */
-            if (opts.queue !== false) {
-                $['dequeue'](element, opts.queue);
+            if (opts['queue'] !== false) {
+                $['dequeue'](element, opts['queue']);
             }
         }
 
@@ -3844,24 +3837,24 @@
     $['each']([ "Down", "Up" ], function(i, direction) {
         Velocity['Redirects']["slide" + direction] = function (element, options, elementsIndex, elementsSize, elements, promiseData) {
             var opts = $['extend']({}, options),
-                begin = opts.begin,
-                complete = opts.complete,
+                begin = opts['begin'],
+                complete = opts['complete'],
                 computedValues = { height: "", marginTop: "", marginBottom: "", paddingTop: "", paddingBottom: "" },
                 inlineValues = {};
 
-            if (opts.display === undefined) {
+            if (opts['display'] === undefined) {
                 /* Show the element before slideDown begins and hide the element after slideUp completes. */
                 /* Note: Inline elements cannot have dimensions animated, so they're reverted to inline-block. */
-                opts.display = (direction === "Down" ? (Velocity['CSS']['Values']['getDisplayType'](element) === "inline" ? "inline-block" : "block") : "none");
+                opts['display'] = (direction === "Down" ? (Velocity['CSS']['Values']['getDisplayType'](element) === "inline" ? "inline-block" : "block") : "none");
             }
 
-            opts.begin = function() {
+            opts['begin'] = function() {
                 /* If the user passed in a begin callback, fire it now. */
                 begin && begin.call(elements, elements);
 
                 /* Cache the elements' original vertical dimensional property values so that we can animate back to them. */
                 for (var property in computedValues) {
-                    inlineValues[property] = element.style[property];
+                    inlineValues[property] = element['style'][property];
 
                     /* For slideDown, use forcefeeding to animate all vertical properties from 0. For slideUp,
                        use forcefeeding to start from computed values and animate down to 0. */
@@ -3870,11 +3863,11 @@
                 }
 
                 /* Force vertical overflow content to clip so that sliding works as expected. */
-                inlineValues.overflow = element.style.overflow;
-                element.style.overflow = "hidden";
+                inlineValues['overflow'] = element['style']['overflow'];
+                element['style']['overflow'] = "hidden";
             }
 
-            opts.complete = function() {
+            opts['complete'] = function() {
                 /* Reset element to its pre-slide inline values once its slide animation is complete. */
                 for (var property in inlineValues) {
                     element['style'][property] = inlineValues[property];
@@ -3882,7 +3875,7 @@
 
                 /* If the user passed in a complete callback, fire it now. */
                 complete && complete.call(elements, elements);
-                promiseData && promiseData.resolver(elements);
+                promiseData && promiseData['resolver'](elements);
             };
 
             Velocity(element, computedValues, opts);
@@ -3894,26 +3887,26 @@
         Velocity['Redirects']["fade" + direction] = function (element, options, elementsIndex, elementsSize, elements, promiseData) {
             var opts = $['extend']({}, options),
                 propertiesMap = { opacity: (direction === "In") ? 1 : 0 },
-                originalComplete = opts.complete;
+                originalComplete = opts['complete'];
 
             /* Since redirects are triggered individually for each element in the animated set, avoid repeatedly triggering
                callbacks by firing them only when the final element has been reached. */
             if (elementsIndex !== elementsSize - 1) {
-                opts.complete = opts.begin = null;
+                opts['complete'] = opts['begin'] = null;
             } else {
-                opts.complete = function() {
+                opts['complete'] = function() {
                     if (originalComplete) {
                         originalComplete.call(elements, elements);
                     }
 
-                    promiseData && promiseData.resolver(elements);
+                    promiseData && promiseData['resolver'](elements);
                 }
             }
 
             /* If a display was passed in, use it. Otherwise, default to "none" for fadeOut or the element-specific default for fadeIn. */
             /* Note: We allow users to pass in "null" to skip display setting altogether. */
-            if (opts.display === undefined) {
-                opts.display = (direction === "In" ? "auto" : "none");
+            if (opts['display'] === undefined) {
+                opts['display'] = (direction === "In" ? "auto" : "none");
             }
 
             Velocity(this, propertiesMap, opts);
