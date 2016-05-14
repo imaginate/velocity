@@ -2853,10 +2853,10 @@
                         **************************/
 
                         /* Parse out endValue, easing, and startValue from the property's data. */
-                        var valueData = parsePropertyValue(propertiesMap[property]),
-                            endValue = valueData[0],
-                            easing = valueData[1],
-                            startValue = valueData[2];
+                        var valueData  = parsePropertyValue(propertiesMap[property]);
+                        var endValue   = valueData[0];
+                        var easing     = valueData[1];
+                        var startValue = valueData[2];
 
                         /* Now that the original property name's format has been used for the parsePropertyValue() lookup above,
                            we force the property to its camelCase styling to normalize it for manipulation. */
@@ -2923,10 +2923,10 @@
                            Value Data Extraction
                         **************************/
 
-                        var separatedValue,
-                            endValueUnitType,
-                            startValueUnitType,
-                            operator = false;
+                        var separatedValue;
+                        var endValueUnitType;
+                        var startValueUnitType;
+                        var operator = false;
 
                         /* Separates a property value into its numeric value and its unit type. */
                         function separateValue (property, value) {
@@ -3022,14 +3022,14 @@
                                of the prior element, the prior element's conversion ratios are used. Like most optimizations in Velocity,
                                this is done to minimize DOM querying. */
                             var sameRatioIndicators = {
-                                    'myParent': element['parentNode'] || document['body'], /* GET */
-                                    'position': CSS['getPropertyValue'](element, "position"), /* GET */
-                                    'fontSize': CSS['getPropertyValue'](element, "fontSize") /* GET */
-                                },
-                                /* Determine if the same % ratio can be used. % is based on the element's position value and its parent's width and height dimensions. */
-                                samePercentRatio = ((sameRatioIndicators['position'] === callUnitConversionData['lastPosition']) && (sameRatioIndicators['myParent'] === callUnitConversionData['lastParent'])),
-                                /* Determine if the same em ratio can be used. em is relative to the element's fontSize. */
-                                sameEmRatio = (sameRatioIndicators['fontSize'] === callUnitConversionData['lastFontSize']);
+                              'myParent': element['parentNode'] || document['body'], /* GET */
+                              'position': CSS['getPropertyValue'](element, "position"), /* GET */
+                              'fontSize': CSS['getPropertyValue'](element, "fontSize") /* GET */
+                            };
+                            /* Determine if the same % ratio can be used. % is based on the element's position value and its parent's width and height dimensions. */
+                            var samePercentRatio = ((sameRatioIndicators['position'] === callUnitConversionData['lastPosition']) && (sameRatioIndicators['myParent'] === callUnitConversionData['lastParent']));
+                            /* Determine if the same em ratio can be used. em is relative to the element's fontSize. */
+                            var sameEmRatio = (sameRatioIndicators['fontSize'] === callUnitConversionData['lastFontSize']);
 
                             /* Store these ratio indicators call-wide for the next element to compare against. */
                             callUnitConversionData['lastParent'] = sameRatioIndicators['myParent'];
@@ -3042,8 +3042,8 @@
 
                             /* Note: IE8 rounds to the nearest pixel when returning CSS values, thus we perform conversions using a measurement
                                of 100 (instead of 1) to give our ratios a precision of at least 2 decimal values. */
-                            var measurement = 100,
-                                unitRatios = {};
+                            var measurement = 100;
+                            var unitRatios = {};
 
                             if (!sameEmRatio || !samePercentRatio) {
                                 var dummy = Data(element)['isSVG'] ? document['createElementNS']("http://www.w3.org/2000/svg", "rect") : document['createElement']("div");
@@ -3331,8 +3331,8 @@
         /* Note: The loop option's logic is performed here -- after element processing -- because the current call needs
            to undergo its queue insertion prior to the loop option generating its series of constituent "reverse" calls,
            which chain after the current call. Two reverse calls (two "alternations") constitute one loop. */
-        var opts = $['extend']({}, Velocity['defaults'], options),
-            reverseCallsCount;
+        var opts = $['extend']({}, Velocity['defaults'], options);
+        var reverseCallsCount;
 
         opts['loop'] = parseInt(opts['loop']);
         reverseCallsCount = (opts['loop'] * 2) - 1;
@@ -3443,12 +3443,12 @@
                    Call-Wide Variables
                 ************************/
 
-                var callContainer = Velocity['State']['calls'][i],
-                    call = callContainer[0],
-                    opts = callContainer[2],
-                    timeStart = callContainer[3],
-                    firstTick = !!timeStart,
-                    tweenDummyValue = null;
+                var callContainer = Velocity['State']['calls'][i];
+                var call = callContainer[0];
+                var opts = callContainer[2];
+                var timeStart = callContainer[3];
+                var firstTick = !!timeStart;
+                var tweenDummyValue = null;
 
                 /* If timeStart is undefined, then this is the first time that this call has been processed by tick().
                    We assign timeStart now so that its value is as close to the real animation start time as possible.
