@@ -134,7 +134,9 @@
         return false;
       }
     }
-    catch (err) return false;
+    catch (err) {
+      return false;
+    }
 
     for (key in obj) {}
 
