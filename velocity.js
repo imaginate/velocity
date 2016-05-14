@@ -11,157 +11,218 @@
 /* Browser support: Using this shim instead of jQuery proper removes support for IE8. */
 
 ;(function (window, document) {
-    /***************
-         Setup
-    ***************/
 
-    /* jQuery base. */
-    var $ = function (selector, context) {
-        return new $['fn']['init'](selector, context);
-    };
+  /**********************
+      Private Helpers
+  **********************/
 
-    /********************
-       Private Methods
-    ********************/
+  /** @type {Function} */
+  var toString = Object.prototype.toString;
+  /** @type {Function} */
+  var hasOwn = Object.prototype.hasOwnProperty;
 
-    /* jQuery */
-    $['isWindow'] = function (obj) {
-        /* jshint eqeqeq: false */
-        return obj != null && obj == obj.window;
-    };
+  /**********************
+     Private Constants
+  **********************/
 
-    /* jQuery */
-    $['type'] = function (obj) {
-        if (obj == null) {
-            return obj + "";
+  /**
+   * @const
+   * @type {!Object}
+   */
+  var OBJECTS = {
+    '[object Boolean]':  'boolean',
+    '[object Number]':   'number',
+    '[object String]':   'string',
+    '[object Function]': 'function',
+    '[object Array]':    'array',
+    '[object Date]':     'date',
+    '[object RegExp]':   'regexp',
+    '[object Object]':   'object',
+    '[object Error]':    'error'
+  };
+
+  /**********************
+     Private Variables
+  **********************/
+
+  /* For $['data']() */
+
+  /** @type {!Object} */
+  var cache = {};
+  /** @type {string} */
+  $['expando'] = "velocity" + (new Date().getTime());
+  /** @type {number} */
+  $['uuid'] = 0;
+
+  /***************
+       Setup
+  ***************/
+
+  /* jQuery base */
+
+  var $ = function(selector, context) {
+    return new $['fn']['init'](selector, context);
+  };
+
+  /********************
+     Private Methods
+  ********************/
+
+  /* jQuery */
+  
+  $['isWindow'] = function (obj) {
+    /* jshint eqeqeq: false */
+    return obj != null && obj == obj.window;
+  };
+
+  /* jQuery */
+  
+  $['type'] = function (obj) {
+    
+    if (obj == null) return obj + "";
+
+    return typeof obj === "object" || typeof obj === "function"
+      ? OBJECTS[ toString.call(obj) ] || "object"
+      : typeof obj;
+  };
+
+  /* jQuery */
+
+  $['isArray'] = Array.isArray || function (obj) {
+    return $['type'](obj) === "array";
+  };
+
+  /* jQuery */
+
+  function isArraylike (obj) {
+
+    /** @type {number} */
+    var length;
+    /** @type {string} */
+    var type;
+
+    length = obj.length;
+    type = $['type'](obj);
+
+    if (type === "function" || $['isWindow'](obj)) return false;
+
+    if (obj.nodeType === 1 && length) return true;
+
+    return type === "array" || length === 0 || (
+      typeof length === "number" && length > 0 && (length - 1) in obj
+    );
+  }
+
+  /***************
+     $ Methods
+  ***************/
+
+  /* jQuery: Support removed for IE<9. */
+  
+  $['isPlainObject'] = function (obj) {
+
+    /** @type {string} */
+    var key;
+
+    if ( !obj || $['type'](obj) !== "object" ) return false;
+    if ( obj.nodeType || $['isWindow'](obj)  ) return false;
+
+    try {
+      if (obj.constructor &&
+          !hasOwn.call(obj, "constructor") &&
+          !hasOwn.call(obj.constructor.prototype, "isPrototypeOf")) {
+        return false;
+      }
+    }
+    catch (err) return false;
+
+    for (key in obj) {}
+
+    return key === undefined || hasOwn.call(obj, key);
+  };
+
+  /* jQuery */
+  
+  $['each'] = function(obj, callback, args) {
+
+    /** @type {boolean} */
+    var isArray;
+    /** @type {string} */
+    var key;
+    /** @type {*} */
+    var val;
+    /** @type {number} */
+    var len;
+    /** @type {number} */
+    var i;
+
+    isArray = isArraylike(obj);
+    len = obj.length;
+    i = 0;
+
+    if (args) {
+      if (isArray) {
+        for (; i < len; i++) {
+          val = callback.apply(obj[i], args);
+          if (val === false) break;
         }
-
-        return typeof obj === "object" || typeof obj === "function" ?
-            class2type[toString.call(obj)] || "object" :
-            typeof obj;
-    };
-
-    /* jQuery */
-    $['isArray'] = Array.isArray || function (obj) {
-        return $['type'](obj) === "array";
-    };
-
-    /* jQuery */
-    function isArraylike (obj) {
-        var length = obj.length,
-            type = $['type'](obj);
-
-        if (type === "function" || $['isWindow'](obj)) {
-            return false;
+      }
+      else {
+        for (key in obj) {
+          val = callback.apply(obj[key], args);
+          if (val === false) break;
         }
-
-        if (obj.nodeType === 1 && length) {
-            return true;
+      }
+    }
+    else {
+      if (isArray) {
+        for (; i < len; i++) {
+          val = callback.call(obj[i], i, obj[i]);
+          if (val === false) break;
         }
-
-        return type === "array" || length === 0 || typeof length === "number" && length > 0 && (length - 1) in obj;
+      }
+      else {
+        for (key in obj) {
+          val = callback.call(obj[key], key, obj[key]);
+          if (val === false) break;
+        }
+      }
     }
 
-    /***************
-       $ Methods
-    ***************/
+    return obj;
+  };
 
-    /* jQuery: Support removed for IE<9. */
-    $['isPlainObject'] = function (obj) {
-        var key;
+  /* Custom */
 
-        if (!obj || $['type'](obj) !== "object" || obj.nodeType || $['isWindow'](obj)) {
-            return false;
-        }
+  $['data'] = function (node, key, value) {
 
-        try {
-            if (obj.constructor &&
-                !hasOwn.call(obj, "constructor") &&
-                !hasOwn.call(obj.constructor.prototype, "isPrototypeOf")) {
-                return false;
-            }
-        } catch (e) {
-            return false;
-        }
+    /** @type {*} */
+    var store;
+    /** @type {string} */
+    var id;
 
-        for (key in obj) {}
+    /* $['getData']() */
+    if (value === undefined) {
+      id = node[$['expando']];
+      store = id && cache[id];
 
-        return key === undefined || hasOwn.call(obj, key);
-    };
+      if (key === undefined) return store;
+      if (store && key in store) return store[key];
+    }
+    /* $['setData']() */
+    else if (key !== undefined) {
+      id = node[$['expando']];
 
-    /* jQuery */
-    $['each'] = function(obj, callback, args) {
-        var value,
-            i = 0,
-            length = obj.length,
-            isArray = isArraylike(obj);
+      if (!id) {
+        id = ++$['uuid'];
+        node[$['expando']] = id;
+      }
 
-        if (args) {
-            if (isArray) {
-                for (; i < length; i++) {
-                    value = callback.apply(obj[i], args);
-
-                    if (value === false) {
-                        break;
-                    }
-                }
-            } else {
-                for (i in obj) {
-                    value = callback.apply(obj[i], args);
-
-                    if (value === false) {
-                        break;
-                    }
-                }
-            }
-
-        } else {
-            if (isArray) {
-                for (; i < length; i++) {
-                    value = callback.call(obj[i], i, obj[i]);
-
-                    if (value === false) {
-                        break;
-                    }
-                }
-            } else {
-                for (i in obj) {
-                    value = callback.call(obj[i], i, obj[i]);
-
-                    if (value === false) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        return obj;
-    };
-
-    /* Custom */
-    $['data'] = function (node, key, value) {
-        /* $['getData']() */
-        if (value === undefined) {
-            var id = node[$['expando']],
-                store = id && cache[id];
-
-            if (key === undefined) {
-                return store;
-            } else if (store) {
-                if (key in store) {
-                    return store[key];
-                }
-            }
-        /* $['setData']() */
-        } else if (key !== undefined) {
-            var id = node[$['expando']] || (node[$['expando']] = ++$['uuid']);
-
-            cache[id] = cache[id] || {};
-            cache[id][key] = value;
-
-            return value;
-        }
-    };
+      cache[id] = cache[id] || {};
+      cache[id][key] = value;
+      return value;
+    }
+  };
 
     /* Custom */
     $['removeData'] = function (node, keys) {
@@ -365,16 +426,15 @@
 
       /* jQuery */
 
-      function offsetParent() {
+      function setOffsetParent() {
 
         /** @type {(Element|Document)} */
         var offsetParent;
 
         offsetParent = this['offsetParent'] || document;
-        while (offsetParent && (
-                !offsetParent['nodeType']['toLowerCase'] === "html" &&
-                offsetParent['style']['position'] === "static"
-              )) {
+        while (offsetParent && ( !offsetParent['nodeType']['toLowerCase'] === "html" &&
+                                  offsetParent['style']['position'] === "static"      )
+              ) {
           offsetParent = offsetParent['offsetParent'];
         }
         return offsetParent || document;
@@ -392,7 +452,7 @@
       var parentOffset;
 
       elem = this[0];
-      offsetParent = offsetParent.apply(elem);
+      offsetParent = setOffsetParent.apply(elem);
       offset = this['offset']();
       parentOffset = /^(?:body|html)$/i.test(offsetParent['nodeName'])
         ? { 'top': 0, 'left': 0 }
@@ -412,34 +472,6 @@
       };
     }
   };
-
-  /**********************
-     Private Variables
-  **********************/
-
-  /* For $['data']() */
-
-  /** @type {!Object} */
-  var cache = {};
-  /** @type {string} */
-  $['expando'] = "velocity" + (new Date().getTime());
-  /** @type {number} */
-  $['uuid'] = 0;
-
-  /* For $['queue']() */
-
-  /** @type {!Object} */
-  var class2type = {};
-  /** @type {Function} */
-  var hasOwn = class2type.hasOwnProperty;
-  /** @type {Function} */
-  var toString = class2type.toString;
-  /** @type {!Array} */
-  var types = "Boolean Number String Function Array Date RegExp Object Error".split(" ");
-  
-  for (var i = 0; i < types.length; i++) {
-    class2type["[object " + types[i] + "]"] = types[i].toLowerCase();
-  }
 
   /* Makes $(node) possible, without having to call init. */
   $['fn']['init']['prototype'] = $['fn'];
