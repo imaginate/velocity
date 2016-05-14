@@ -311,90 +311,142 @@
         });
     };
 
-    /******************
-       $['fn'] Methods
-    ******************/
+  /******************
+    $['fn'] Methods
+  ******************/
 
-    /* jQuery */
-    $['fn'] = $['prototype'] = {
-        init: function (selector) {
-            /* Just return the element wrapped inside an array; don't proceed with the actual jQuery node wrapping process. */
-            if (selector.nodeType) {
-                this[0] = selector;
+  /* jQuery */
 
-                return this;
-            } else {
-                throw new Error("Not a DOM node.");
-            }
-        },
+  $['fn'] = $['prototype'] = {
 
-        offset: function () {
-            /* jQuery altered code: Dropped disconnected DOM node checking. */
-            var box = this[0].getBoundingClientRect ? this[0].getBoundingClientRect() : { top: 0, left: 0 };
+    /**
+     * Return an element wrapped inside an array (instead of jQuery's wrapping).
+     *
+     * @param {!Object|Element}
+     * @return {!Array}
+     */
+    'init': function(selector) {
 
-            return {
-                top: box.top + (window['pageYOffset'] || document.scrollTop  || 0)  - (document.clientTop  || 0),
-                left: box.left + (window['pageXOffset'] || document.scrollLeft  || 0) - (document.clientLeft || 0)
-            };
-        },
+      if (!selector['nodeType']) throw new TypeError('`selector` is not a DOM node');
 
-        position: function () {
-            /* jQuery */
-            function offsetParent() {
-                var offsetParent = this.offsetParent || document;
+      this[0] = selector;
+      return this;
+    },
 
-                while (offsetParent && (!offsetParent.nodeType.toLowerCase === "html" && offsetParent.style.position === "static")) {
-                    offsetParent = offsetParent.offsetParent;
-                }
+    /**
+     * @return {!{
+     *   top:  number,
+     *   left: number
+     * }}
+     */
+    'offset': function() {
+      
+      // jQuery altered code: Dropped disconnected DOM node checking.
 
-                return offsetParent || document;
-            }
+      /** @type {!{ top: number, left: number }} */
+      var box;
 
-            /* Zepto */
-            var elem = this[0],
-                offsetParent = offsetParent.apply(elem),
-                offset = this.offset(),
-                parentOffset = /^(?:body|html)$/i.test(offsetParent.nodeName) ? { top: 0, left: 0 } : $(offsetParent).offset()
+      box = this[0]['getBoundingClientRect']
+        ? this[0]['getBoundingClientRect']()
+        : { 'top': 0, 'left': 0 };
+      return {
+        'top':  box['top']  + (window['pageYOffset'] || document['scrollTop']  || 0) - (document['clientTop']  || 0),
+        'left': box['left'] + (window['pageXOffset'] || document['scrollLeft'] || 0) - (document['clientLeft'] || 0)
+      };
+    },
 
-            offset.top -= parseFloat(elem.style.marginTop) || 0;
-            offset.left -= parseFloat(elem.style.marginLeft) || 0;
+    /**
+     * @return {!{
+     *   top:  number,
+     *   left: number
+     * }}
+     */
+    'position': function() {
 
-            if (offsetParent.style) {
-                parentOffset.top += parseFloat(offsetParent.style.borderTopWidth) || 0
-                parentOffset.left += parseFloat(offsetParent.style.borderLeftWidth) || 0
-            }
+      /* jQuery */
 
-            return {
-                top: offset.top - parentOffset.top,
-                left: offset.left - parentOffset.left
-            };
+      function offsetParent() {
+
+        /** @type {(Element|Document)} */
+        var offsetParent;
+
+        offsetParent = this['offsetParent'] || document;
+        while (offsetParent && (
+                !offsetParent['nodeType']['toLowerCase'] === "html" &&
+                offsetParent['style']['position'] === "static"
+              )) {
+          offsetParent = offsetParent['offsetParent'];
         }
-    };
+        return offsetParent || document;
+      }
 
-    /**********************
-       Private Variables
-    **********************/
+      /* Zepto */
 
-    /* For $['data']() */
-    var cache = {};
-    $['expando'] = "velocity" + (new Date().getTime());
-    $['uuid'] = 0;
+      /** @type {(Element|Document)} */
+      var elem;
+      /** @type {(Element|Document)} */
+      var offsetParent;
+      /** @type {!{ top: number, left: number }} */
+      var offset;
+      /** @type {!{ top: number, left: number }} */
+      var parentOffset;
 
-    /* For $['queue']() */
-    var class2type = {},
-        hasOwn = class2type.hasOwnProperty,
-        toString = class2type.toString;
+      elem = this[0];
+      offsetParent = offsetParent.apply(elem);
+      offset = this['offset']();
+      parentOffset = /^(?:body|html)$/i.test(offsetParent['nodeName'])
+        ? { 'top': 0, 'left': 0 }
+        : $(offsetParent)['offset']();
 
-    var types = "Boolean Number String Function Array Date RegExp Object Error".split(" ");
-    for (var i = 0; i < types.length; i++) {
-        class2type["[object " + types[i] + "]"] = types[i].toLowerCase();
+      offset['top']  -= parseFloat(elem['style']['marginTop'])  || 0;
+      offset['left'] -= parseFloat(elem['style']['marginLeft']) || 0;
+
+      if (offsetParent['style']) {
+        parentOffset['top']  += parseFloat(offsetParent['style']['borderTopWidth'])  || 0;
+        parentOffset['left'] += parseFloat(offsetParent['style']['borderLeftWidth']) || 0;
+      }
+
+      return {
+        'top':  offset['top']  - parentOffset['top'],
+        'left': offset['left'] - parentOffset['left']
+      };
     }
+  };
 
-    /* Makes $(node) possible, without having to call init. */
-    $['fn']['init']['prototype'] = $['fn'];
+  /**********************
+     Private Variables
+  **********************/
 
-    /* Globalize Velocity onto the window, and assign its Utilities property. */
-    window['Velocity'] = { 'Utilities': $ };
+  /* For $['data']() */
+
+  /** @type {!Object} */
+  var cache = {};
+  /** @type {string} */
+  $['expando'] = "velocity" + (new Date().getTime());
+  /** @type {number} */
+  $['uuid'] = 0;
+
+  /* For $['queue']() */
+
+  /** @type {!Object} */
+  var class2type = {};
+  /** @type {Function} */
+  var hasOwn = class2type.hasOwnProperty;
+  /** @type {Function} */
+  var toString = class2type.toString;
+  /** @type {!Array} */
+  var types = "Boolean Number String Function Array Date RegExp Object Error".split(" ");
+  
+  for (var i = 0; i < types.length; i++) {
+    class2type["[object " + types[i] + "]"] = types[i].toLowerCase();
+  }
+
+  /* Makes $(node) possible, without having to call init. */
+  $['fn']['init']['prototype'] = $['fn'];
+
+  /* Globalize Velocity onto the window, and assign its Utilities property. */
+  window['Velocity'] = { 'Utilities': $ };
+
 })(window);
 
 /******************
